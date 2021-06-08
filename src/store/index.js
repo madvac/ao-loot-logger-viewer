@@ -1,5 +1,5 @@
-import Vue from "vue"
-import Vuex from "vuex"
+import Vue from 'vue'
+import Vuex from 'vuex'
 
 import deepFreeze from '../utils/deepFreeze'
 import items from '../utils/items.json'
@@ -14,23 +14,23 @@ export default new Vuex.Store({
     selectedPlayersLogs: [],
     chestLogs: [],
     filters: {
-      t2: false,
-      t3: false,
+      t2: true,
+      t3: true,
       t4: true,
       t5: true,
       t6: true,
       t7: true,
       t8: true,
-      bag: false,
-      cape: false,
-      lost: false,
+      bag: true,
+      cape: true,
+      lost: true,
       donated: true,
-      food: false,
-      mount: false,
-      others: false,
+      food: true,
+      mount: true,
+      others: true,
       resolved: true,
-      potion: false,
-      trash: false,
+      potion: true,
+      trash: true
     }
   },
   mutations: {
@@ -93,7 +93,7 @@ export default new Vuex.Store({
         const amount = parseInt(result[5], 10)
 
         let itemId = items[itemName]
-        
+
         if (itemId == null) {
           console.error(`item not found: "${itemName}"`)
           continue
@@ -230,7 +230,7 @@ export default new Vuex.Store({
         }
 
         const player = players[donation.donatedBy]
-         
+
         // initially, we consider that every item donated is an extra item.
         // As we don't know if the user picked up this item yet.
         let extraItemsDonated = donation.amount
@@ -317,11 +317,17 @@ export default new Vuex.Store({
           continue
         }
 
-        if (state.filters.resolved && Object.keys(player.resolvedItems).length > 0) {
+        if (
+          state.filters.resolved &&
+          Object.keys(player.resolvedItems).length > 0
+        ) {
           continue
         }
 
-        if (state.filters.donated && Object.keys(player.donatedItems).length > 0) {
+        if (
+          state.filters.donated &&
+          Object.keys(player.donatedItems).length > 0
+        ) {
           continue
         }
 
@@ -402,7 +408,9 @@ export default new Vuex.Store({
     },
     filteredLoot(state, getters) {
       const filteredLoot = getters.allLoot.filter(loot => {
-        const hideItem = getters.filterPatterns.some(pattern => loot.itemId.match(pattern))
+        const hideItem = getters.filterPatterns.some(pattern =>
+          loot.itemId.match(pattern)
+        )
 
         return !hideItem
       })
@@ -411,7 +419,9 @@ export default new Vuex.Store({
     },
     filteredDonations(state, getters) {
       const filteredDonations = getters.donatedLoot.filter(loot => {
-        const hideItem = getters.filterPatterns.some(pattern => loot.itemId.match(pattern))
+        const hideItem = getters.filterPatterns.some(pattern =>
+          loot.itemId.match(pattern)
+        )
 
         return !hideItem
       })
@@ -535,11 +545,11 @@ export default new Vuex.Store({
         filterPatterns.push(/_SOUL/)
         filterPatterns.push(/_RELIC/)
         filterPatterns.push(/_SHARD_AVALONIAN/)
-        
+
         filterPatterns.push(/_RANDOM_DUNGEON_ELITE_TOKEN_/)
         filterPatterns.push(/_RANDOM_DUNGEON_SOLO_TOKEN_/)
         filterPatterns.push(/_RANDOM_DUNGEON_TOKEN_/)
-        
+
         filterPatterns.push(/_FARM/)
         filterPatterns.push(/_TOOL_/)
         filterPatterns.push(/_GVGTOKEN_/)
@@ -551,7 +561,7 @@ export default new Vuex.Store({
         filterPatterns.push(/QUESTITEM_EXP_TOKEN/)
         filterPatterns.push(/QUESTITEM_TOKEN/)
         filterPatterns.push(/_VANITY_/)
-        
+
         filterPatterns.push(/_EVENT_EASTER_/)
 
         filterPatterns.push(/T\d_ROCK/)
@@ -564,7 +574,7 @@ export default new Vuex.Store({
         filterPatterns.push(/T\d_PLANKS/)
         filterPatterns.push(/T\d_HIDE/)
         filterPatterns.push(/T\d_LEATHER/)
-        
+
         filterPatterns.push(/_ESSENCE/)
       }
 
@@ -577,7 +587,7 @@ export default new Vuex.Store({
         if (donationsByPlayer[donation.donatedBy] == null) {
           donationsByPlayer[donation.donatedBy] = {}
         }
-        
+
         if (donationsByPlayer[donation.donatedBy][donation.itemId] == null) {
           donationsByPlayer[donation.donatedBy][donation.itemId] = {
             amount: 0,
@@ -585,8 +595,11 @@ export default new Vuex.Store({
           }
         }
 
-        donationsByPlayer[donation.donatedBy][donation.itemId].amount += donation.amount
-        donationsByPlayer[donation.donatedBy][donation.itemId].history.push(donation)
+        donationsByPlayer[donation.donatedBy][donation.itemId].amount +=
+          donation.amount
+        donationsByPlayer[donation.donatedBy][donation.itemId].history.push(
+          donation
+        )
       }
 
       return deepFreeze(donationsByPlayer)

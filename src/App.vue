@@ -2,25 +2,35 @@
   <div class="home" @drop.prevent="drop" @dragover.prevent>
     <h3>Loot Logger Viewer</h3>
 
-    <Filters/>
-    
-    <table id="loot-table" class="table table-bordered" v-if="slices.length">
+    <Filters />
+
+    <table
+      id="loot-table"
+      class="table table-bordered"
+      v-if="sortedFilteredPlayers.length"
+    >
       <thead>
         <tr>
           <th>Name</th>
           <th>Items</th>
         </tr>
       </thead>
-      <tbody v-for="(slice, index) in slices" :key="index">
+      <tbody>
         <PlayerLoot
-          v-for="player in slice"
-          :key="player.name"
-          :name="player.name"
-          :died="player.died"
-          :picked-up-items="player.pickedUpItems"
-          :resolved-items="filters.resolved ? player.resolvedItems : {}"
-          :lost-items="filters.lost ? player.lostItems : {}" 
-          :donated-items="filters.donated ? player.donatedItems : {}"
+          v-for="playerName in sortedFilteredPlayers"
+          :key="playerName"
+          :name="filteredPlayers[playerName].name"
+          :died="filteredPlayers[playerName].died"
+          :picked-up-items="filteredPlayers[playerName].pickedUpItems"
+          :resolved-items="
+            filters.resolved ? filteredPlayers[playerName].resolvedItems : {}
+          "
+          :lost-items="
+            filters.lost ? filteredPlayers[playerName].lostItems : {}
+          "
+          :donated-items="
+            filters.donated ? filteredPlayers[playerName].donatedItems : {}
+          "
         />
       </tbody>
     </table>
@@ -41,12 +51,8 @@ export default {
     Filters
   },
   computed: {
-    ...mapState([
-      'filters'
-    ]),
-    ...mapGetters([
-      'filteredPlayers'
-    ]),
+    ...mapState(['filters']),
+    ...mapGetters(['filteredPlayers']),
     sortedFilteredPlayers() {
       return Object.values(this.filteredPlayers)
         .sort((a, b) => {
@@ -54,61 +60,23 @@ export default {
             return b.amountOfPickedUpItems - a.amountOfPickedUpItems
           }
 
-          if (this.filters.resolved && a.amountOfResolvedItems !== b.amountOfResolvedItems) {
+          if (
+            this.filters.resolved &&
+            a.amountOfResolvedItems !== b.amountOfResolvedItems
+          ) {
             return b.amountOfResolvedItems - a.amountOfResolvedItems
           }
 
-          if (this.filters.donated && a.amountOfDonatedItems !== b.amountOfDonatedItems) {
+          if (
+            this.filters.donated &&
+            a.amountOfDonatedItems !== b.amountOfDonatedItems
+          ) {
             return b.amountOfDonatedItems - a.amountOfDonatedItems
           }
 
           return 0
         })
-        .map(p => p.name)
-    },
-    slices() {
-      const slices = []
-      const MAX_IMAGES_PER_SLICE = 100
-      const MAX_PLAYERS_IN_SLICE = 8
-
-      const players = this.sortedFilteredPlayers.slice()
-
-      let imagesInSlice = 0
-      let slice = []
-
-      while (players.length) {
-        const playerName = players.shift()
-        const player = this.filteredPlayers[playerName]
-
-        let amountOfDifferentItems = Object.keys(player.pickedUpItems).length
-
-        if (this.filters.resolved) {
-          amountOfDifferentItems += Object.keys(player.resolvedItems).length
-        }
-
-        if (this.filters.lost) {
-          amountOfDifferentItems += Object.keys(player.lostItems).length
-        }
-
-        if (this.filters.donated) {
-          amountOfDifferentItems += Object.keys(player.donatedItems).length
-        }
-
-        if (slice.length >= MAX_PLAYERS_IN_SLICE || imagesInSlice + amountOfDifferentItems > MAX_IMAGES_PER_SLICE) {
-          slices.push(slice)
-          imagesInSlice = 0
-          slice = []
-        }
-
-        slice.push(player)
-        imagesInSlice += amountOfDifferentItems
-      }
-
-      if (slice.length) {
-        slices.push(slice)
-      }
-
-      return slices
+        .map((p) => p.name)
     }
   },
   methods: {
@@ -118,13 +86,13 @@ export default {
       for (const file of droppedFiles) {
         const reader = new FileReader()
 
-        reader.onload = evt => this.processFile(evt.target.result)
+        reader.onload = (evt) => this.processFile(evt.target.result)
 
-        reader.readAsText(file, "UTF-8")
+        reader.readAsText(file, 'UTF-8')
       }
     },
     processFile(content) {
-      const lines = content.trim().split("\n")
+      const lines = content.trim().split('\n')
 
       if (!lines.length) {
         return
@@ -149,7 +117,6 @@ export default {
       if (result) {
         return this.processGuildMembers(lines.slice(1))
       }
-
     },
     processLoot(lines) {
       this.$store.commit('addLootLogs', lines)
@@ -165,7 +132,9 @@ export default {
 </script>
 
 <style>
-html, body, .home {
+html,
+body,
+.home {
   min-height: 100vh;
   width: 100%;
 }

@@ -17,8 +17,11 @@ export function dateToStr(date) {
   window.date = date
 
   if (Object.isFrozen(date)) {
-    return date.clone().utc().format('LTS')
+    return date
+      .clone()
+      .utc()
+      .format('LLLL')
   }
 
-  return date.utc().format('LTS')
+  return date.utc().format('LLLL')
 }
