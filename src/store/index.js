@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import VuexPersistence from 'vuex-persist'
 
 import deepFreeze from '../utils/deepFreeze'
 import items from '../utils/items.json'
@@ -8,32 +9,41 @@ import { strToDate } from '../utils/date'
 
 Vue.use(Vuex)
 
+const vuexLocal = new VuexPersistence({
+  key: 'ao-loot-logger-viewer',
+  storage: window.localStorage,
+  reducer: state => ({ filters: state.filters })
+})
+
 export default new Vuex.Store({
+  strict: true,
+  plugins: [vuexLocal.plugin],
   state: {
     lootLogs: [],
     selectedPlayersLogs: [],
     chestLogs: [],
     filters: {
-      t2: true,
-      t3: true,
+      t2: false,
+      t3: false,
       t4: true,
       t5: true,
       t6: true,
       t7: true,
       t8: true,
-      bag: true,
-      cape: true,
-      lost: true,
-      donated: true,
-      food: true,
-      mount: true,
-      others: true,
-      resolved: true,
-      potion: true,
-      trash: true
+      bag: false,
+      cape: false,
+      lost: false,
+      donated: false,
+      food: false,
+      mount: false,
+      others: false,
+      resolved: false,
+      potion: false,
+      trash: false
     }
   },
   mutations: {
+    RESTORE_MUTATION: vuexLocal.RESTORE_MUTATION,
     addLootLogs(state, logs) {
       const loot = []
 
@@ -111,6 +121,9 @@ export default new Vuex.Store({
       }
 
       state.chestLogs.push(deepFreeze(donations))
+    },
+    toggleFilter(state, name) {
+      state.filters[name] = !state.filters[name]
     }
   },
   getters: {

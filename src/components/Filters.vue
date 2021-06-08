@@ -43,7 +43,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapMutations } from 'vuex'
 
 export default {
   data() {
@@ -55,9 +55,7 @@ export default {
     ...mapState(['filters'])
   },
   methods: {
-    toggleFilter(name) {
-      this.filters[name] = !this.filters[name]
-    }
+    ...mapMutations(['toggleFilter'])
   }
 }
 </script>
