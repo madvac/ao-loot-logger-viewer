@@ -26,8 +26,8 @@ img {
 
 .small {
   position: absolute;
-  left: 12px;
-  top: 12px;
+  left: 1rem;
+  top: 2rem;
   width: 50px;
 }
 </style>

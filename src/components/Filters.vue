@@ -62,19 +62,19 @@ export default {
 
 <style scoped>
 .container {
-  width: 80%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin-bottom: 32px;
-  margin-top: 32px;
+  margin-bottom: 3rem;
+  margin-top: 1rem;
 }
 
 .filters {
   display: grid;
   grid-gap: 1em;
-  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
   width: 100%;
   text-align: center;
 }

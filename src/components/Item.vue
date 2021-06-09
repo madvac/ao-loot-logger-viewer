@@ -80,43 +80,43 @@ export default {
 <style scoped lang="scss">
 figure {
   margin-bottom: 0;
+  width: 4rem;
+  height: 4rem;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  transition: background-color 300ms ease-out;
+
+  img,
+  .amount {
+    opacity: 0;
+    transition: opacity 300ms ease-out;
+  }
+}
+
+figure.loaded {
+  background-color: transparent;
+
+  img,
+  .amount {
+    opacity: 1;
+  }
 }
 
 .item {
-  // display: grid;
-  // grid-template-columns: 1fr;
-  // grid-template-rows: 1fr auto;
-  // width: 4rem;
-  // height: 4rem;
   position: relative;
 }
 
 img {
   width: 4rem;
-  // grid-column: 1;
-  // grid-row: 1;
 }
 
 .amount {
-  display: none;
-}
-
-.loaded {
-  .amount {
-    display: block;
-    font-size: 0.8em;
-    color: white;
-    // align-self: end;
-    // justify-self: end;
-    // grid-column: 1;
-    // grid-row: 1;
-    // margin-right: 9px;
-    // margin-bottom: 10px;
-    font-family: monospaced;
-    position: absolute;
-    left: calc(3rem - 3px);
-    top: calc(3rem - 10px);
-  }
+  color: white;
+  font-size: 0.8em;
+  font-family: monospaced;
+  position: absolute;
+  left: calc(3rem - 3px);
+  top: calc(3rem - 10px);
 }
 
 .donated {

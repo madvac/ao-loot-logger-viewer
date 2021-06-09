@@ -221,7 +221,17 @@ body {
 }
 
 table {
-  border-color: var(--font-color);
+  border-color: transparent !important;
+  background-color: rgba(0, 0, 0, 0.25);
+  border-radius: 5px;
+
+  thead {
+    color: var(--primary-color);
+  }
+
+  tr:nth-child(2n + 2) {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
 }
 
 th {
