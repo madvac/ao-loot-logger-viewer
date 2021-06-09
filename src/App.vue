@@ -204,6 +204,19 @@ body {
   transition: border-color 300ms ease-in-out;
 }
 
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+
+  &:visited {
+    color: var(--primary-color);
+  }
+
+  &:hover {
+    color: var(--secondary-color);
+  }
+}
+
 .dragover .home {
   border-color: var(--primary-color);
 }
