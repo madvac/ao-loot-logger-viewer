@@ -125,12 +125,12 @@ export default {
       for (const file of droppedFiles) {
         const reader = new FileReader()
 
-        reader.onload = (evt) => this.processFile(evt.target.result)
+        reader.onload = (evt) => this.processFile(file.name, evt.target.result)
 
         reader.readAsText(file, 'UTF-8')
       }
     },
-    processFile(content) {
+    processFile(filename, content) {
       const lines = content.trim().split('\n')
 
       if (!lines.length) {
@@ -142,29 +142,29 @@ export default {
       let result = regex.lootLogRe.exec(head)
 
       if (result) {
-        return this.processLoot(lines.slice(1))
+        return this.$store.commit('addLootLogs', {
+          filename,
+          logs: lines.slice(1)
+        })
       }
 
       result = regex.chestLogRe.exec(head)
 
       if (result) {
-        return this.processChestLog(lines.slice(1))
+        return this.$store.commit('addChestLogs', {
+          filename,
+          logs: lines.slice(1)
+        })
       }
 
       result = regex.guildMemberLogRe.exec(head)
 
       if (result) {
-        return this.processGuildMembers(lines.slice(1))
+        return this.$store.commit('addSelectedPlayersLogs', {
+          filename,
+          logs: lines.slice(1)
+        })
       }
-    },
-    processLoot(lines) {
-      this.$store.commit('addLootLogs', lines)
-    },
-    processGuildMembers(lines) {
-      this.$store.commit('addSelectedPlayersLogs', lines)
-    },
-    processChestLog(lines) {
-      this.$store.commit('addChestLogs', lines)
     }
   }
 }

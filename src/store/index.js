@@ -19,9 +19,9 @@ export default new Vuex.Store({
   strict: true,
   plugins: [vuexLocal.plugin],
   state: {
-    lootLogs: [],
-    selectedPlayersLogs: [],
-    chestLogs: [],
+    lootLogs: {},
+    selectedPlayersLogs: {},
+    chestLogs: {},
     filters: {
       t2: false,
       t3: false,
@@ -45,11 +45,11 @@ export default new Vuex.Store({
   mutations: {
     RESTORE_MUTATION: vuexLocal.RESTORE_MUTATION,
     reset(state) {
-      state.lootLogs.splice(0)
-      state.selectedPlayersLogs.splice(0)
-      state.chestLogs.splice(0)
+      state.lootLogs = {}
+      state.selectedPlayersLogs = {}
+      state.chestLogs = {}
     },
-    addLootLogs(state, logs) {
+    addLootLogs(state, { filename, logs }) {
       const loot = []
 
       for (const line of logs) {
@@ -70,9 +70,9 @@ export default new Vuex.Store({
         loot.push(log)
       }
 
-      state.lootLogs.push(deepFreeze(loot))
+      Vue.set(state.lootLogs, filename, deepFreeze(loot))
     },
-    addSelectedPlayersLogs(state, logs) {
+    addSelectedPlayersLogs(state, { filename, logs }) {
       const selectedPlayers = []
 
       for (const line of logs) {
@@ -89,9 +89,9 @@ export default new Vuex.Store({
         selectedPlayers.push(player)
       }
 
-      state.selectedPlayersLogs.push(deepFreeze(selectedPlayers))
+      Vue.set(state.selectedPlayersLogs, filename, deepFreeze(selectedPlayers))
     },
-    addChestLogs(state, logs) {
+    addChestLogs(state, { filename, logs }) {
       const donations = []
 
       for (const line of logs) {
@@ -125,7 +125,7 @@ export default new Vuex.Store({
         }
       }
 
-      state.chestLogs.push(deepFreeze(donations))
+      Vue.set(state.chestLogs, filename, deepFreeze(donations))
     },
     toggleFilter(state, name) {
       state.filters[name] = !state.filters[name]
@@ -133,16 +133,16 @@ export default new Vuex.Store({
   },
   getters: {
     hasFiles(state) {
-      return (
-        state.chestLogs.length ||
-        state.lootLogs.length ||
-        state.selectedPlayersLogs.length
-      )
+      const hasChestLogs = Object.keys(state.chestLogs).length > 0
+      const hasLootLogs = Object.keys(state.lootLogs).length > 0
+      const hasPlayerLogs = Object.keys(state.selectedPlayersLogs).length > 0
+
+      return hasChestLogs || hasLootLogs || hasPlayerLogs
     },
     donatedLoot(state) {
       const donatedLoot = {}
 
-      for (const logs of state.chestLogs) {
+      for (const logs of Object.values(state.chestLogs)) {
         for (const line of logs) {
           const key = `${line.donatedBy} ${line.donatedAt} ${line.itemId} ${line.amount}`
 
@@ -362,13 +362,13 @@ export default new Vuex.Store({
       return deepFreeze(players)
     },
     selectedPlayers(state) {
-      if (!state.selectedPlayersLogs.length) {
+      if (!Object.keys(state.selectedPlayersLogs).length) {
         return null
       }
 
       const selectedPlayers = new Set()
 
-      for (const logs of state.selectedPlayersLogs) {
+      for (const logs of Object.values(state.selectedPlayersLogs)) {
         for (const item of logs) {
           selectedPlayers.add(item.playerName)
         }
@@ -394,7 +394,7 @@ export default new Vuex.Store({
     allLoot(state) {
       const loot = []
 
-      for (const logs of state.lootLogs) {
+      for (const logs of Object.values(state.lootLogs)) {
         for (const log of logs) {
           const isDuplicate = loot.some(e => {
             // if the player looted different players, it is definetly not a duplicate.
