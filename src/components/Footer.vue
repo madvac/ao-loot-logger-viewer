@@ -1,10 +1,12 @@
 <template>
   <footer>
-    <a
-      href="https://github.com/matheussampaio/ao-loot-logger/releases/latest/download/ao-loot-logger.exe"
-    >
-      Download AO Loot Logger</a
-    >
+    <p>
+      <a
+        href="https://github.com/matheussampaio/ao-loot-logger/releases/latest/download/ao-loot-logger.exe"
+      >
+        Download AO Loot Logger</a
+      >
+    </p>
 
     <p>
       <small>© {{ year }} Matheus Sampaio</small>

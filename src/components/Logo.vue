@@ -1,15 +1,21 @@
 <template>
   <div>
-    <img :class="{ small: hasFiles }" src="assets/logo.png" alt="" srcset="" />
+    <img
+      :class="{ small: small }"
+      src="assets/logo.png"
+      alt="Loot Logger Logo"
+      @click="() => $emit('click')"
+    />
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-
 export default {
-  computed: {
-    ...mapGetters(['hasFiles'])
+  props: {
+    small: {
+      type: Boolean,
+      default: false
+    }
   }
 }
 </script>
@@ -22,10 +28,11 @@ img {
   width: 200px;
   transition: top 500ms ease-in-out, left 500ms ease-in-out,
     width 500ms ease-in-out;
+  cursor: pointer;
 }
 
 .small {
-  position: absolute;
+  position: fixed;
   left: 1rem;
   top: 2rem;
   width: 50px;

@@ -5,7 +5,7 @@
     @dragover.prevent="dragover"
     @dragleave.prevent="dragleave"
   >
-    <Logo />
+    <Logo :small="smallLogo" @click="reset" />
 
     <div class="content" v-if="sortedFilteredPlayers.length">
       <Filters />
@@ -102,9 +102,13 @@ export default {
           return 0
         })
         .map((p) => p.name)
+    },
+    smallLogo() {
+      return !!this.sortedFilteredPlayers.length
     }
   },
   methods: {
+    ...mapMutations(['reset']),
     dragover() {
       document.body.classList.add('dragover')
     },
@@ -237,10 +241,10 @@ a {
   align-items: center;
 
   &.file-upload {
-    justify-content: center;
-
     input.form-control {
       max-width: 350px;
+      margin-top: 30%;
+      margin-bottom: 2rem;
     }
   }
 }
