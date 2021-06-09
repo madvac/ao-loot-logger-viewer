@@ -44,6 +44,11 @@ export default new Vuex.Store({
   },
   mutations: {
     RESTORE_MUTATION: vuexLocal.RESTORE_MUTATION,
+    reset(state) {
+      state.lootLogs.splice(0)
+      state.selectedPlayersLogs.splice(0)
+      state.chestLogs.splice(0)
+    },
     addLootLogs(state, logs) {
       const loot = []
 

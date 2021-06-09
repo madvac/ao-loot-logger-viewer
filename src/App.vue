@@ -57,7 +57,7 @@
 </template>
 
 <script>
-import { mapGetters, mapState } from 'vuex'
+import { mapGetters, mapMutations, mapState } from 'vuex'
 
 import Filters from './components/Filters.vue'
 import Footer from './components/Footer.vue'
