@@ -1,40 +1,16 @@
 <template>
   <tr>
     <td class="player-name" :class="{ died: died }">{{ name }}</td>
-    <td class="items">
+    <transition-group name="list" class="items" tag="td">
       <Item
-        v-for="(props, itemId) in pickedUpItems"
-        :key="`picked-up-${itemId}`"
-        :id="itemId"
-        :type="'pickedup'"
-        :amount="props.amount"
-        :history="props.history"
+        v-for="item in items"
+        :key="item.key"
+        :id="item.itemId"
+        :type="item.type"
+        :amount="item.amount"
+        :history="item.history"
       />
-      <Item
-        v-for="(props, itemId) in resolvedItems"
-        :key="`resolved-${itemId}`"
-        :id="itemId"
-        :type="'resolved'"
-        :amount="props.amount"
-        :history="props.history"
-      />
-      <Item
-        v-for="(props, itemId) in lostItems"
-        :key="`lost-${itemId}`"
-        :id="itemId"
-        :type="'lost'"
-        :amount="props.amount"
-        :history="props.history"
-      />
-      <Item
-        v-for="(props, itemId) in donatedItems"
-        :key="`donated-${itemId}`"
-        :id="itemId"
-        :type="'donation'"
-        :amount="props.amount"
-        :history="props.history"
-      />
-    </td>
+    </transition-group>
   </tr>
 </template>
 
@@ -71,6 +47,61 @@ export default {
       type: Boolean,
       default: () => false
     }
+  },
+  computed: {
+    items() {
+      const items = []
+
+      for (const itemId in this.pickedUpItems) {
+        const item = this.pickedUpItems[itemId]
+
+        items.push({
+          key: `pickedup-${itemId}`,
+          itemId,
+          type: 'pickedup',
+          amount: item.amount,
+          history: item.history
+        })
+      }
+
+      for (const itemId in this.resolvedItems) {
+        const item = this.resolvedItems[itemId]
+
+        items.push({
+          key: `resolved-${itemId}`,
+          itemId,
+          type: 'resolved',
+          amount: item.amount,
+          history: item.history
+        })
+      }
+
+      for (const itemId in this.lostItems) {
+        const item = this.lostItems[itemId]
+
+        items.push({
+          key: `lost-${itemId}`,
+          itemId,
+          type: 'lost',
+          amount: item.amount,
+          history: item.history
+        })
+      }
+
+      for (const itemId in this.donatedItems) {
+        const item = this.donatedItems[itemId]
+
+        items.push({
+          key: `donation-${itemId}`,
+          itemId,
+          type: 'donation',
+          amount: item.amount,
+          history: item.history
+        })
+      }
+
+      return items
+    }
   }
 }
 </script>
@@ -91,5 +122,28 @@ export default {
   display: grid;
   grid-gap: 0.2rem;
   grid-template-columns: repeat(auto-fit, 4rem);
+}
+
+.list-enter-active,
+.list-leave-active {
+  transition: opacity 800ms ease-in-out, transform 800ms ease-in-out;
+}
+
+.list-item {
+  transition: opacity 800ms ease-in-out, transform 800ms ease-in-out;
+}
+
+.list-enter,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.list-leave-active {
+  position: absolute;
+}
+
+.list-move {
+  transition: transform 800ms;
 }
 </style>

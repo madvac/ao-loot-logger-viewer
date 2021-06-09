@@ -1,15 +1,15 @@
 <template>
   <figure
-    v-lazyload
     class="item"
     :class="{
       donated: type === 'donation',
       lost: type === 'lost',
-      resolved: type === 'resolved'
+      resolved: type === 'resolved',
+      loaded: loaded
     }"
   >
-    <img :data-url="url" :title="title" />
-    <div class="amount">{{ amount }}</div>
+    <img :src="url" :title="title" loading="lazy" @load="onLoad" />
+    <code class="amount">{{ amount }}</code>
   </figure>
 </template>
 
@@ -21,7 +21,7 @@ export default {
   name: 'Item',
   data() {
     return {
-      publicPath: process.env.BASE_URL
+      loaded: false
     }
   },
   props: {
@@ -73,6 +73,11 @@ export default {
 
       return [`${itemsIdToName[this.id]} - ${this.id}`, '', ...strs].join('\n')
     }
+  },
+  methods: {
+    onLoad() {
+      this.loaded = true
+    }
   }
 }
 </script>
@@ -112,11 +117,12 @@ img {
 
 .amount {
   color: white;
-  font-size: 0.8em;
-  font-family: monospaced;
+  font-size: 0.7em;
   position: absolute;
-  left: calc(3rem - 3px);
-  top: calc(3rem - 10px);
+  left: calc(3rem - 10px);
+  top: calc(3rem - 9px);
+  width: 20px;
+  text-align: center;
 }
 
 .donated {
