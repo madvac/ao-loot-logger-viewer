@@ -1,9 +1,7 @@
 <template>
   <footer>
     <p>
-      <a
-        href="https://github.com/matheussampaio/ao-loot-logger/releases/latest/download/ao-loot-logger.exe"
-      >
+      <a href="https://aolootlog.com/downloads" target="_blank">
         Download AO Loot Logger</a
       >
     </p>
