@@ -1,5 +1,10 @@
 <template>
-  <div class="home" @drop.prevent="drop" @dragover.prevent>
+  <div
+    class="home"
+    @drop.prevent="drop"
+    @dragover.prevent="dragover"
+    @dragleave.prevent="dragleave"
+  >
     <Logo />
 
     <div class="content" v-if="sortedFilteredPlayers.length">
@@ -100,10 +105,15 @@ export default {
     }
   },
   methods: {
-    upload(event) {
-      window.event = event
+    dragover() {
+      document.body.classList.add('dragover')
+    },
+    dragleave() {
+      document.body.classList.remove('dragover')
     },
     drop(event) {
+      document.body.classList.remove('dragover')
+
       const droppedFiles = Array.from(
         event.dataTransfer ? event.dataTransfer.files : event.target.files
       )
@@ -190,10 +200,12 @@ body {
   display: flex;
   align-items: center;
   flex-direction: column;
+  border: 3px dashed var(--background-color);
+  transition: border-color 300ms ease-in-out;
 }
 
-.drag-over {
-  border: 1px dashed black;
+.dragover .home {
+  border-color: var(--primary-color);
 }
 
 #loot-table {
