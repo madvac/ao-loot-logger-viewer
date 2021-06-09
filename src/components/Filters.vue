@@ -102,7 +102,7 @@ svg {
 }
 
 svg.eye {
-  color: #0d6efd;
+  color: var(--primary-color);
 }
 
 svg.eye-slash {

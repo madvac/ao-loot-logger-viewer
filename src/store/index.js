@@ -127,6 +127,13 @@ export default new Vuex.Store({
     }
   },
   getters: {
+    hasFiles(state) {
+      return (
+        state.chestLogs.length ||
+        state.lootLogs.length ||
+        state.selectedPlayersLogs.length
+      )
+    },
     donatedLoot(state) {
       const donatedLoot = {}
 
@@ -216,7 +223,7 @@ export default new Vuex.Store({
           player.resolvedItems[loot.itemId].history.push({
             amount: loot.amount,
             at: loot.lootedAt,
-            str: `picked up but lost`
+            str: `picked up but lost to ${loot.lootedBy}`
           })
 
           if (loot.amount >= player.pickedUpItems[loot.itemId].amount) {

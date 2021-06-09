@@ -1,5 +1,6 @@
 <template>
-  <div
+  <figure
+    v-lazyload
     class="item"
     :class="{
       donated: type === 'donation',
@@ -7,9 +8,9 @@
       resolved: type === 'resolved'
     }"
   >
-    <img :src="url" :alt="id" :title="title" />
+    <img :data-url="url" :title="title" />
     <div class="amount">{{ amount }}</div>
-  </div>
+  </figure>
 </template>
 
 <script>
@@ -76,31 +77,46 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+figure {
+  margin-bottom: 0;
+}
+
 .item {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 1fr auto;
+  // display: grid;
+  // grid-template-columns: 1fr;
+  // grid-template-rows: 1fr auto;
+  // width: 4rem;
+  // height: 4rem;
+  position: relative;
 }
 
 img {
-  width: 80px;
-  grid-column: 1;
-  grid-row: 1;
+  width: 4rem;
+  // grid-column: 1;
+  // grid-row: 1;
 }
 
 .amount {
-  font-size: 0.8em;
-  color: white;
-  align-self: end;
-  justify-self: end;
-  grid-column: 1;
-  grid-row: 1;
-  margin-right: 9px;
-  margin-bottom: 10px;
-  font-family: monospaced;
-  width: 21px;
-  text-align: center;
+  display: none;
+}
+
+.loaded {
+  .amount {
+    display: block;
+    font-size: 0.8em;
+    color: white;
+    // align-self: end;
+    // justify-self: end;
+    // grid-column: 1;
+    // grid-row: 1;
+    // margin-right: 9px;
+    // margin-bottom: 10px;
+    font-family: monospaced;
+    position: absolute;
+    left: calc(3rem - 3px);
+    top: calc(3rem - 10px);
+  }
 }
 
 .donated {

@@ -75,7 +75,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .player-name {
   text-align: center;
   width: 200px;
@@ -88,9 +88,8 @@ export default {
 }
 
 .items {
-  padding-top: 8px;
   display: grid;
-  grid-gap: 4px;
-  grid-template-columns: repeat(auto-fit, 80px);
+  grid-gap: 0.2rem;
+  grid-template-columns: repeat(auto-fit, 4rem);
 }
 </style>

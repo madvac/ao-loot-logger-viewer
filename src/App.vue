@@ -1,58 +1,78 @@
 <template>
   <div class="home" @drop.prevent="drop" @dragover.prevent>
-    <h3>Loot Logger Viewer</h3>
+    <Logo />
 
-    <Filters />
+    <div class="content" v-if="sortedFilteredPlayers.length">
+      <Filters />
 
-    <table
-      id="loot-table"
-      class="table table-bordered"
-      v-if="sortedFilteredPlayers.length"
-    >
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Items</th>
-        </tr>
-      </thead>
-      <tbody>
-        <PlayerLoot
-          v-for="playerName in sortedFilteredPlayers"
-          :key="playerName"
-          :name="filteredPlayers[playerName].name"
-          :died="filteredPlayers[playerName].died"
-          :picked-up-items="filteredPlayers[playerName].pickedUpItems"
-          :resolved-items="
-            filters.resolved ? filteredPlayers[playerName].resolvedItems : {}
-          "
-          :lost-items="
-            filters.lost ? filteredPlayers[playerName].lostItems : {}
-          "
-          :donated-items="
-            filters.donated ? filteredPlayers[playerName].donatedItems : {}
-          "
-        />
-      </tbody>
-    </table>
+      <table id="loot-table" class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Items</th>
+          </tr>
+        </thead>
+        <tbody>
+          <PlayerLoot
+            v-for="playerName in sortedFilteredPlayers"
+            :key="playerName"
+            :name="filteredPlayers[playerName].name"
+            :died="filteredPlayers[playerName].died"
+            :picked-up-items="filteredPlayers[playerName].pickedUpItems"
+            :resolved-items="
+              filters.resolved ? filteredPlayers[playerName].resolvedItems : {}
+            "
+            :lost-items="
+              filters.lost ? filteredPlayers[playerName].lostItems : {}
+            "
+            :donated-items="
+              filters.donated ? filteredPlayers[playerName].donatedItems : {}
+            "
+          />
+        </tbody>
+      </table>
+    </div>
+
+    <div class="content file-upload" v-else>
+      <input
+        class="form-control"
+        type="file"
+        name="file-upload"
+        id="file-upload"
+        accept=".txt,.csv"
+        multiple
+        @change="drop"
+      />
+    </div>
+
+    <Footer />
+
+    <GitHubCorner />
   </div>
 </template>
 
 <script>
 import { mapGetters, mapState } from 'vuex'
 
-import PlayerLoot from './components/PlayerLoot.vue'
 import Filters from './components/Filters.vue'
+import Footer from './components/Footer.vue'
+import GitHubCorner from './components/GitHubCorner.vue'
+import PlayerLoot from './components/PlayerLoot.vue'
 import regex from './utils/regex'
+import Logo from './components/Logo.vue'
 
 export default {
   name: 'App',
   components: {
     PlayerLoot,
-    Filters
+    Filters,
+    GitHubCorner,
+    Footer,
+    Logo
   },
   computed: {
     ...mapState(['filters']),
-    ...mapGetters(['filteredPlayers']),
+    ...mapGetters(['filteredPlayers', 'hasFiles']),
     sortedFilteredPlayers() {
       return Object.values(this.filteredPlayers)
         .sort((a, b) => {
@@ -80,8 +100,13 @@ export default {
     }
   },
   methods: {
+    upload(event) {
+      window.event = event
+    },
     drop(event) {
-      const droppedFiles = Array.from(event.dataTransfer.files)
+      const droppedFiles = Array.from(
+        event.dataTransfer ? event.dataTransfer.files : event.target.files
+      )
 
       for (const file of droppedFiles) {
         const reader = new FileReader()
@@ -131,30 +156,72 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
+:root {
+  --primary-color: #ffaa00;
+  --secondary-color: #009ff6;
+
+  --font-color: #f0e7d5;
+
+  --background-color: #252525;
+
+  --brand-color: #ffaa00;
+  --brand-color-hover: --secondary-color;
+  --brand-color-visited: #ffdd00;
+}
+
 html,
-body,
-.home {
-  min-height: 100vh;
-  width: 100%;
+body {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  min-height: 100%;
+  min-width: 100%;
+  color: var(--font-color);
+  background-color: var(--background-color);
+}
+
+body {
+  padding: 1rem;
 }
 
 .home {
+  width: 100%;
   display: flex;
   align-items: center;
   flex-direction: column;
-  padding-top: 16px;
+}
+
+.drag-over {
+  border: 1px dashed black;
 }
 
 #loot-table {
+  border-collapse: collapse;
+  color: var(--font-color);
+  border-spacing: 0px;
+}
+
+.content {
+  flex: 1 0 auto;
   width: 80%;
   max-width: 1280px;
   margin-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  &.file-upload {
+    justify-content: center;
+
+    input.form-control {
+      max-width: 350px;
+    }
+  }
 }
 
 table {
-  border-collapse: collapse;
-  border-spacing: 0px;
+  border-color: var(--font-color);
 }
 
 th {
