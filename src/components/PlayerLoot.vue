@@ -1,6 +1,10 @@
 <template>
   <tr>
-    <td class="player-name" :class="{ died: died }">{{ name }}</td>
+    <td class="player-name" :class="{ died: died }">
+      <div :title="died ? `${name} died.` : ''">
+        {{ name }}
+      </div>
+    </td>
     <transition-group name="list" class="items" tag="td">
       <Item
         v-for="item in items"
@@ -112,6 +116,7 @@ export default {
   width: 200px;
   vertical-align: middle;
   font-weight: 600;
+  cursor: default;
 }
 
 .died {

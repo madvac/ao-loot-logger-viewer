@@ -4,7 +4,6 @@ import VuexPersistence from 'vuex-persist'
 
 import deepFreeze from '../utils/deepFreeze'
 import items from '../utils/items.json'
-import regex from '../utils/regex'
 import { strToDate } from '../utils/date'
 
 Vue.use(Vuex)
@@ -49,21 +48,15 @@ export default new Vuex.Store({
       state.selectedPlayersLogs = {}
       state.chestLogs = {}
     },
-    addLootLogs(state, { filename, logs }) {
+    addLootLogs(state, { filename, matches }) {
       const loot = []
 
-      for (const line of logs) {
-        const result = regex.lootLogRe.exec(line)
-
-        if (result == null) {
-          continue
-        }
-
-        const lootedAt = strToDate(result[1])
-        const lootedBy = result[2]
-        const itemId = result[3]
-        const amount = parseInt(result[4], 10)
-        const lootedFrom = result[5]
+      for (const match of matches) {
+        const lootedAt = strToDate(match.groups.lootedAt)
+        const lootedBy = match.groups.lootedBy
+        const itemId = match.groups.itemId
+        const amount = parseInt(match.groups.amount, 10)
+        const lootedFrom = match.groups.lootedFrom
 
         const log = { lootedAt, lootedBy, itemId, amount, lootedFrom }
 
@@ -72,17 +65,13 @@ export default new Vuex.Store({
 
       Vue.set(state.lootLogs, filename, deepFreeze(loot))
     },
-    addSelectedPlayersLogs(state, { filename, logs }) {
+    addSelectedPlayersLogs(state, { filename, matches }) {
       const selectedPlayers = []
 
-      for (const line of logs) {
-        const result = regex.guildMemberLogRe.exec(line)
-
-        if (result == null) {
-          continue
-        }
-
-        const playerName = result[1]
+      for (const match of matches) {
+        const playerName = (
+          match.groups.userName1 || match.groups.userName2
+        ).toLowerCase()
 
         const player = { playerName }
 
@@ -91,21 +80,15 @@ export default new Vuex.Store({
 
       Vue.set(state.selectedPlayersLogs, filename, deepFreeze(selectedPlayers))
     },
-    addChestLogs(state, { filename, logs }) {
+    addChestLogs(state, { filename, matches }) {
       const donations = []
 
-      for (const line of logs) {
-        const result = regex.chestLogRe.exec(line)
-
-        if (result == null) {
-          continue
-        }
-
-        const donatedAt = strToDate(result[1])
-        const donatedBy = result[2]
-        const itemName = result[3]
-        const itemEnchant = parseInt(result[4], 10)
-        const amount = parseInt(result[5], 10)
+      for (const match of matches) {
+        const donatedAt = strToDate(match.donatedAt)
+        const donatedBy = match.donatedBy
+        const itemName = match.itemName
+        const itemEnchant = parseInt(match.itemEnchant, 10)
+        const amount = parseInt(match.amount, 10)
 
         let itemId = items[itemName]
 
@@ -366,15 +349,15 @@ export default new Vuex.Store({
         return null
       }
 
-      const selectedPlayers = new Set()
+      const selectedPlayers = {}
 
       for (const logs of Object.values(state.selectedPlayersLogs)) {
         for (const item of logs) {
-          selectedPlayers.add(item.playerName)
+          selectedPlayers[item.playerName] = true
         }
       }
 
-      return Array.from(selectedPlayers)
+      return selectedPlayers
     },
     filteredPlayers(state, getters) {
       if (!getters.selectedPlayers) {
@@ -383,8 +366,14 @@ export default new Vuex.Store({
 
       const players = {}
 
-      for (const player of getters.selectedPlayers) {
-        if (getters.allPlayers[player]) {
+      // for (const player of getters.selectedPlayers) {
+      //   if (getters.allPlayers[player]) {
+      //     players[player] = getters.allPlayers[player]
+      //   }
+      // }
+
+      for (const player in getters.allPlayers) {
+        if (getters.selectedPlayers[player.toLowerCase()]) {
           players[player] = getters.allPlayers[player]
         }
       }

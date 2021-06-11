@@ -46,6 +46,7 @@
 import { mapState, mapMutations } from 'vuex'
 
 export default {
+  name: 'Filters',
   data() {
     return {
       downloading: false

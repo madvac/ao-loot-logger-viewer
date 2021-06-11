@@ -5,12 +5,16 @@
     @dragover.prevent="dragover"
     @dragleave.prevent="dragleave"
   >
-    <Logo :small="smallLogo" @click="reset" />
+    <Logo :small="hasFiles" @click="reset" />
 
-    <div class="content" v-if="sortedFilteredPlayers.length">
+    <div class="content" v-if="hasFiles">
       <Filters />
 
-      <table id="loot-table" class="table table-bordered">
+      <table
+        id="loot-table"
+        class="table table-bordered"
+        v-if="sortedFilteredPlayers.length"
+      >
         <thead>
           <tr>
             <th>Name</th>
@@ -36,6 +40,11 @@
           />
         </tbody>
       </table>
+
+      <div v-else class="no-players">
+        <p>No loot to display.</p>
+        <p>Update the filters or upload more files.</p>
+      </div>
     </div>
 
     <div class="content file-upload" v-else>
@@ -48,6 +57,10 @@
         multiple
         @change="drop"
       />
+
+      <a href="#faq">Read the FAQ</a>
+
+      <FAQ />
     </div>
 
     <Footer />
@@ -65,6 +78,7 @@ import GitHubCorner from './components/GitHubCorner.vue'
 import PlayerLoot from './components/PlayerLoot.vue'
 import regex from './utils/regex'
 import Logo from './components/Logo.vue'
+import FAQ from './components/FAQ.vue'
 
 export default {
   name: 'App',
@@ -73,7 +87,8 @@ export default {
     Filters,
     GitHubCorner,
     Footer,
-    Logo
+    Logo,
+    FAQ
   },
   computed: {
     ...mapState(['filters']),
@@ -102,9 +117,6 @@ export default {
           return 0
         })
         .map((p) => p.name)
-    },
-    smallLogo() {
-      return !!this.sortedFilteredPlayers.length
     }
   },
   methods: {
@@ -131,38 +143,32 @@ export default {
       }
     },
     processFile(filename, content) {
-      const lines = content.trim().split('\n')
+      const logs = content.trim()
 
-      if (!lines.length) {
-        return
-      }
+      let matches = [...logs.matchAll(regex.lootLogRe)]
 
-      const head = lines[0]
-
-      let result = regex.lootLogRe.exec(head)
-
-      if (result) {
+      if (matches.length) {
         return this.$store.commit('addLootLogs', {
           filename,
-          logs: lines.slice(1)
+          matches
         })
       }
 
-      result = regex.chestLogRe.exec(head)
+      matches = [...logs.matchAll(regex.chestLogRe)]
 
-      if (result) {
+      if (matches.length) {
         return this.$store.commit('addChestLogs', {
           filename,
-          logs: lines.slice(1)
+          matches
         })
       }
 
-      result = regex.guildMemberLogRe.exec(head)
+      matches = [...logs.matchAll(regex.guildMemberLogRe)]
 
-      if (result) {
+      if (matches.length) {
         return this.$store.commit('addSelectedPlayersLogs', {
           filename,
-          logs: lines.slice(1)
+          matches
         })
       }
     }
@@ -201,6 +207,8 @@ body {
 
 .home {
   width: 100%;
+  min-height: 500px;
+  min-width: 320px;
   display: flex;
   align-items: center;
   flex-direction: column;
@@ -231,6 +239,13 @@ a {
   border-spacing: 0px;
 }
 
+.no-players {
+  background-color: rgba(0, 0, 0, 0.2);
+  width: 100%;
+  text-align: center;
+  padding-top: 1rem;
+}
+
 .content {
   flex: 1 0 auto;
   width: 80%;
@@ -243,7 +258,7 @@ a {
   &.file-upload {
     input.form-control {
       max-width: 350px;
-      margin-top: 30%;
+      margin-top: 3rem;
       margin-bottom: 2rem;
     }
   }
