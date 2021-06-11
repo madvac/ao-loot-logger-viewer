@@ -77,7 +77,7 @@
 
       <img
         loading="lazy"
-        src="/assets/logs-from-normal-chest.png"
+        src="assets/logs-from-normal-chest.png"
         alt="How to collect logs from normal chest"
         class="rounded"
       />
@@ -106,7 +106,7 @@
 
       <img
         loading="lazy"
-        src="/assets/logs-from-guild-chest.png"
+        src="assets/logs-from-guild-chest.png"
         alt="How to collect logs from the guild's chest"
         class="rounded"
       />
@@ -134,7 +134,7 @@
 
       <img
         loading="lazy"
-        src="/assets/guilds-members-list.png"
+        src="assets/guilds-members-list.png"
         alt="How to collect the guild's member list"
         class="rounded"
       />
