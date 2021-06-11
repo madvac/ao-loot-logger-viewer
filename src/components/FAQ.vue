@@ -1,32 +1,89 @@
 <template>
   <article>
     <h1 id="faq" class="text-center">
-      <a href="#faq">Frequent asked Questions</a>
+      <a href="#faq">Frequent Asked Questions</a>
     </h1>
 
     <section>
-      <h2 id="upload-files">
-        <a href="#upload-files">How can I upload my files?</a>
+      <h2 id="files">
+        <a href="#files">Which files can I upload?</a>
       </h2>
 
       <p>
-        Use the input in the home page to upload all your files or quickly drag
-        the files from your file system and drop them into the site.
+        There a few types of files that you can upload:
 
-        <br />
-
-        <small>NOTE: The order of the files is not important.</small>
+        <ul>
+          <li>Loot logs exported from
+            <a href="https://aolootlog.com/downloads" target="_blank"
+              >AO Loot Logger</a>.
+          </li>
+          <li>Chest logs exported from Albion Online. The logs will be used to mark some items as resolved. Check <a href="#how-to-chest-logs">here</a> and <a href="#how-to-guilds-chest-logs"
+          >here</a> for instructions.</li>
+          <li>A file containing the players that you want to filter from the list. Check <a href="#filter-players">here</a> for instructions.</li>
+        </ul>
       </p>
     </section>
 
-    <!-- @TODO: Add anchor links to each sections h2 -->
     <section>
-      <h2 id="items-colors">
-        <a href="#items-colors">What the item's colors means?</a>
+      <h2 id="upload-files">
+        <a href="#upload-files">How can I upload the files?</a>
       </h2>
 
-      <!-- TODO: explain each color code -->
-      <p></p>
+      <p>
+        Use the input on the home page to upload all your files or <b>quickly drag
+        the files from your file system and drop them into the site</b>.
+      </p>
+
+      <p><small><b>NOTE:</b> The order in which you upload the files is not important.</small></p>
+    </section>
+
+    <section>
+      <h2 id="items-colors">
+        <a href="#items-colors">What the item's colors mean?</a>
+      </h2>
+
+      <p>Items can be displayed in red when the item was lost, green when the item was deposited, gray when the item is marked as resolved, and normal colors otherwise.</p>
+
+      <p>See below for details and some examples.</p>
+
+      <p>
+        Items in red signal items looted from that player's corpse. This is helpful to understand when the player picked up something but lost right after.
+      </p>
+
+      <img
+        loading="lazy"
+        src="assets/lost-items.png"
+        alt="Lost items in red"
+        class="rounded"
+      />
+
+      <p>Items in green signal items deposited in a chest.</p>
+
+      <img
+        loading="lazy"
+        src="assets/donated-items.png"
+        alt="Donated items in green"
+        class="rounded"
+      />
+
+      <p>Items in grayscale signal resolved items. This means the items were either lost or already deposited in a chest.</p>
+
+      <img
+        loading="lazy"
+        src="assets/resolved-items.png"
+        alt="Resolved items in gray"
+        class="rounded"
+      />
+
+      <p><b>TIP:</b> You can always hover over the item to see more details.</p>
+
+      <img
+        loading="lazy"
+        src="assets/items-details.png"
+        alt="Hover the item to see the details"
+        class="rounded"
+      />
+
     </section>
 
     <section>
@@ -42,24 +99,24 @@
 
       <p>
         To quickly create a list with all members in your guild follow
-        <a href="#create-guilds-members-list">those steps</a>.
+        <a href="#export-guilds-members-list">those steps</a>.
       </p>
     </section>
 
     <section>
       <h2 id="players-in-red">
-        <a href="#players-in-red">Why some player's name are in red?</a>
+        <a href="#players-in-red">Why some player's names are in red?</a>
       </h2>
 
       <p>
         Because those players died while you're collecting the logs. We know
-        that because the logs contains people grabbing loot from their corpses.
+        that because the logs contain people grabbing loot from their corpses.
       </p>
     </section>
 
     <section>
       <h2 id="how-to-chest-logs">
-        <a href="#how-to-chest-logs"> How do I get the chest logs?</a>
+        <a href="#how-to-chest-logs">How do I get the chest logs?</a>
       </h2>
 
       <p>
@@ -69,9 +126,9 @@
       </p>
 
       <p>
-        After copying the logs, create a new file in your computer and paste the
+        After copying the logs, create a new file on your computer and paste the
         content of the logs there. Save it and
-        <a href="#upload-files">upload</a> to the AO Loot Logger Viewer whenever
+        <a href="#upload-files">upload</a> it to the AO Loot Logger Viewer whenever
         you want.
       </p>
 
@@ -98,9 +155,9 @@
       </p>
 
       <p>
-        After copying the logs, create a new file in your computer and paste the
+        After copying the logs, create a new file on your computer and paste the
         content of the logs there. Save it and
-        <a href="#upload-files">upload</a> to the AO Loot Logger Viewer whenever
+        <a href="#upload-files">upload</a> it to the AO Loot Logger Viewer whenever
         you want.
       </p>
 
@@ -113,9 +170,9 @@
     </section>
 
     <section>
-      <h2 id="create-guilds-members-list">
-        <a href="#create-guilds-members-list">
-          How do I collect the guild's member list?</a
+      <h2 id="export-guilds-members-list">
+        <a href="#export-guilds-members-list">
+          How do I collect the guild's members list?</a
         >
       </h2>
 
@@ -126,9 +183,9 @@
       </p>
 
       <p>
-        After copying the list members, create a new file in your computer and
+        After copying the list members, create a new file on your computer and
         paste the content there. Save it and
-        <a href="#upload-files">upload</a> to the AO Loot Logger Viewer whenever
+        <a href="#upload-files">upload</a> it to the AO Loot Logger Viewer whenever
         you want.
       </p>
 
@@ -138,6 +195,42 @@
         alt="How to collect the guild's member list"
         class="rounded"
       />
+    </section>
+
+    <section>
+      <h2 id="bug">
+        <a href="#bug">
+          I found a bug, where should I report?</a
+        >
+      </h2>
+
+      <p>
+        If you're a GitHub user, please create an <a href="https://github.com/matheussampaio/ao-loot-logger-viewer/issues/new" target="_blank">issue</a> and describe the bug there. Otherwise, send me a message on discord: <code>matheus.sampaio#1372</code>
+      </p>
+    </section>
+
+    <section>
+      <h2 id="suggestion-or-fq">
+        <a href="#suggestion-or-fq">
+          I have a suggestion/feature request, where should I send?</a
+        >
+      </h2>
+
+      <p>
+        If you're a GitHub user, start a <a href="https://github.com/matheussampaio/ao-loot-logger-viewer/discussions/new" target="_blank">discussion</a>. Otherwise, send me a message on discord: <code>matheus.sampaio#1372</code>
+      </p>
+    </section>
+
+    <section>
+      <h2 id="donations">
+        <a href="#donations">
+          Where can I donate to the project?</a
+        >
+      </h2>
+
+      <p>
+        Feel free to use the <a href="https://github.com/sponsors/matheussampaio" target="_blank">Github Sponsor</a> program or <a href="https://www.buymeacoffee.com/matheussampaio" target="_blank">Buy me a Coffee</a>
+      </p>
     </section>
   </article>
 </template>
@@ -153,6 +246,7 @@ article {
   max-width: 80%;
   margin-top: 100vh;
   position: absolute;
+  padding-bottom: 5rem;
   top: 20%;
 }
 
@@ -180,7 +274,7 @@ p + img {
 section {
   display: flex;
   flex-direction: column;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
 }
 
 img {
@@ -194,5 +288,9 @@ img {
 
 img:hover {
   transform: scale(102%);
+}
+
+ul {
+  margin-bottom: 0;
 }
 </style>

@@ -69,9 +69,7 @@ export default new Vuex.Store({
       const selectedPlayers = []
 
       for (const match of matches) {
-        const playerName = (
-          match.groups.userName1 || match.groups.userName2
-        ).toLowerCase()
+        const playerName = (match.groups.userName1 || match.groups.userName2).toLowerCase()
 
         const player = { playerName }
 
@@ -84,11 +82,11 @@ export default new Vuex.Store({
       const donations = []
 
       for (const match of matches) {
-        const donatedAt = strToDate(match.donatedAt)
-        const donatedBy = match.donatedBy
-        const itemName = match.itemName
-        const itemEnchant = parseInt(match.itemEnchant, 10)
-        const amount = parseInt(match.amount, 10)
+        const donatedAt = strToDate(match.groups.donatedAt)
+        const donatedBy = match.groups.donatedBy
+        const itemName = match.groups.itemName
+        const itemEnchant = parseInt(match.groups.itemEnchant, 10)
+        const amount = parseInt(match.groups.amount, 10)
 
         let itemId = items[itemName]
 
@@ -325,17 +323,11 @@ export default new Vuex.Store({
           continue
         }
 
-        if (
-          state.filters.resolved &&
-          Object.keys(player.resolvedItems).length > 0
-        ) {
+        if (state.filters.resolved && Object.keys(player.resolvedItems).length > 0) {
           continue
         }
 
-        if (
-          state.filters.donated &&
-          Object.keys(player.donatedItems).length > 0
-        ) {
+        if (state.filters.donated && Object.keys(player.donatedItems).length > 0) {
           continue
         }
 
@@ -365,12 +357,6 @@ export default new Vuex.Store({
       }
 
       const players = {}
-
-      // for (const player of getters.selectedPlayers) {
-      //   if (getters.allPlayers[player]) {
-      //     players[player] = getters.allPlayers[player]
-      //   }
-      // }
 
       for (const player in getters.allPlayers) {
         if (getters.selectedPlayers[player.toLowerCase()]) {
@@ -422,9 +408,7 @@ export default new Vuex.Store({
     },
     filteredLoot(state, getters) {
       const filteredLoot = getters.allLoot.filter(loot => {
-        const hideItem = getters.filterPatterns.some(pattern =>
-          loot.itemId.match(pattern)
-        )
+        const hideItem = getters.filterPatterns.some(pattern => loot.itemId.match(pattern))
 
         return !hideItem
       })
@@ -433,9 +417,7 @@ export default new Vuex.Store({
     },
     filteredDonations(state, getters) {
       const filteredDonations = getters.donatedLoot.filter(loot => {
-        const hideItem = getters.filterPatterns.some(pattern =>
-          loot.itemId.match(pattern)
-        )
+        const hideItem = getters.filterPatterns.some(pattern => loot.itemId.match(pattern))
 
         return !hideItem
       })
@@ -609,11 +591,8 @@ export default new Vuex.Store({
           }
         }
 
-        donationsByPlayer[donation.donatedBy][donation.itemId].amount +=
-          donation.amount
-        donationsByPlayer[donation.donatedBy][donation.itemId].history.push(
-          donation
-        )
+        donationsByPlayer[donation.donatedBy][donation.itemId].amount += donation.amount
+        donationsByPlayer[donation.donatedBy][donation.itemId].history.push(donation)
       }
 
       return deepFreeze(donationsByPlayer)

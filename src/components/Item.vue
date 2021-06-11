@@ -50,25 +50,13 @@ export default {
       let strs = []
 
       if (this.type === 'donation') {
-        strs = this.history.map(
-          (e) => `${e.amount}x donated at ${dateToStr(e.donatedAt)}`
-        )
+        strs = this.history.map((e) => `${e.amount}x donated on ${dateToStr(e.donatedAt)}`)
       } else if (this.type === 'lost') {
-        strs = this.history.map(
-          (e) =>
-            `${e.amount}x lost to ${e.lootedBy} at ${dateToStr(e.lootedAt)}`
-        )
+        strs = this.history.map((e) => `${e.amount}x lost to ${e.lootedBy} at ${dateToStr(e.lootedAt)}`)
       } else if (this.type === 'resolved') {
-        strs = this.history.map(
-          (e) => `${e.amount}x ${e.str} at ${dateToStr(e.at)}`
-        )
+        strs = this.history.map((e) => `${e.amount}x ${e.str} on ${dateToStr(e.at)}`)
       } else {
-        strs = this.history.map(
-          (e) =>
-            `${e.amount}x looted from ${e.lootedFrom} at ${dateToStr(
-              e.lootedAt
-            )}`
-        )
+        strs = this.history.map((e) => `${e.amount}x looted from ${e.lootedFrom} on ${dateToStr(e.lootedAt)}`)
       }
 
       return [`${itemsIdToName[this.id]} - ${this.id}`, '', ...strs].join('\n')
