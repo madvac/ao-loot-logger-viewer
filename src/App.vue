@@ -48,6 +48,7 @@
 
 <script>
 import { mapGetters, mapMutations, mapState } from 'vuex'
+import iziToast from 'izitoast'
 
 import Filters from './components/Filters.vue'
 import Footer from './components/Footer.vue'
@@ -151,12 +152,16 @@ export default {
           matches
         })
       }
+
+      return iziToast.show({ title: 'Error', message: `No matches from this file.` })
     }
   }
 }
 </script>
 
 <style lang="scss">
+@import url('../node_modules/izitoast/dist/css/iziToast.min.css');
+
 :root {
   --primary-color: #ffaa00;
   --secondary-color: #009ff6;
