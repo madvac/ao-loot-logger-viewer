@@ -4,6 +4,60 @@ describe('Regex', () => {
   describe('Loot Logs Regex', () => {
     it('should match with AO Loot Logger output style', () => {
       const lines = [
+        `"12.6.2021 17.40.50","matheussampaio1","Guild Name 1","","Adept's Carrioncaller (T4_2H_HALBERD_MORGANA)","1x               0                          0             4,598             4,497             0             0","AnotherPlayer"`,
+        `"12.6.2021 17.40.50","matheussampaio2","Guild Name 2","","Journeyman's Riding Horse (T3_MOUNT_HORSE)","1x               10,399                          10,748             11,677             10,939             10,649             11,275","AnotherPlayer"`
+      ].join('\n')
+      const results = [...lines.matchAll(regex.aoLootLogRe)]
+
+      expect(results.length).toBe(2)
+
+      const result = results[0]
+
+      expect(result).not.toBeNull()
+
+      expect(result.groups.lootedAt).toBe('12.6.2021 17.40.50')
+      expect(result.groups.lootedBy).toBe('matheussampaio1')
+      expect(result.groups.itemId).toBe('T4_2H_HALBERD_MORGANA')
+      expect(result.groups.amount).toBe('1')
+      expect(result.groups.lootedFrom).toBe('AnotherPlayer')
+    })
+
+    it('should NOT match with MS Loot Logger output style', () => {
+      const lines = [
+        `2021-06-07T22:25:16.432Z;matheussampaio1;T8_CAPEITEM_FW_BRIDGEWATCH;1;matheussampaio2;Elder's Bridgewatch Cape`,
+        `2021-06-07T22:25:16.432Z;matheussampaio1;T8_CAPEITEM_FW_BRIDGEWATCH;1;matheussampaio2;Elder's Bridgewatch Cape`
+      ].join('\n')
+
+      const results = [...lines.matchAll(regex.aoLootLogRe)]
+
+      expect(results.length).toBe(0)
+    })
+
+    it('should NOT match with guilds member list', () => {
+      const line = `matheussampaio`
+      const results = [...line.matchAll(regex.aoLootLogRe)]
+
+      expect(results.length).toBe(0)
+    })
+
+    it('should NOT match with guild logs as guilds member list', () => {
+      const line = `"1"	"matheussampaio"	""	"55738"`
+      const results = [...line.matchAll(regex.aoLootLogRe)]
+
+      expect(results.length).toBe(0)
+    })
+
+    it('should NOT match with chest logs', () => {
+      const line = `"06/10/2021 04:04:42"	"matheussampaio"	"Master's Relic"	"0"	"1"	"1"`
+      const results = [...line.matchAll(regex.aoLootLogRe)]
+
+      expect(results.length).toBe(0)
+    })
+  })
+
+  describe('AO Loot Logs Regex', () => {
+    it('should match with Loot Logger output style', () => {
+      const lines = [
         `5/7/2021 3:00:02;matheussampaio1;T7_POTION_STONESKIN;200;matheussampaio2`,
         `5/7/2021 3:00:02;matheussampaio1;T7_POTION_STONESKIN;200;matheussampaio2`
       ].join('\n')
@@ -126,10 +180,7 @@ describe('Regex', () => {
 
   describe('::Guild Member List Regex', () => {
     it('should match with guild logs member list', () => {
-      const lines = [
-        `"1"	"matheussampaio"	""	"55738"`,
-        `"1"	"username2"	""	"10000"`
-      ].join('\n')
+      const lines = [`"1"	"matheussampaio"	""	"55738"`, `"1"	"username2"	""	"10000"`].join('\n')
       const results = [...lines.matchAll(regex.guildMemberLogRe)]
 
       expect(results.length).toBe(2)

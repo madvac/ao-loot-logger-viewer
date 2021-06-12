@@ -1,20 +1,11 @@
 <template>
-  <div
-    class="home"
-    @drop.prevent="drop"
-    @dragover.prevent="dragover"
-    @dragleave.prevent="dragleave"
-  >
+  <div class="home" @drop.prevent="drop" @dragover.prevent="dragover" @dragleave.prevent="dragleave">
     <Logo :small="hasFiles" @click="reset" />
 
     <div class="content" v-if="hasFiles">
       <Filters />
 
-      <table
-        id="loot-table"
-        class="table table-bordered"
-        v-if="sortedFilteredPlayers.length"
-      >
+      <table id="loot-table" class="table table-bordered" v-if="sortedFilteredPlayers.length">
         <thead>
           <tr>
             <th>Name</th>
@@ -28,15 +19,9 @@
             :name="filteredPlayers[playerName].name"
             :died="filteredPlayers[playerName].died"
             :picked-up-items="filteredPlayers[playerName].pickedUpItems"
-            :resolved-items="
-              filters.resolved ? filteredPlayers[playerName].resolvedItems : {}
-            "
-            :lost-items="
-              filters.lost ? filteredPlayers[playerName].lostItems : {}
-            "
-            :donated-items="
-              filters.donated ? filteredPlayers[playerName].donatedItems : {}
-            "
+            :resolved-items="filters.resolved ? filteredPlayers[playerName].resolvedItems : {}"
+            :lost-items="filters.lost ? filteredPlayers[playerName].lostItems : {}"
+            :donated-items="filters.donated ? filteredPlayers[playerName].donatedItems : {}"
           />
         </tbody>
       </table>
@@ -100,17 +85,11 @@ export default {
             return b.amountOfPickedUpItems - a.amountOfPickedUpItems
           }
 
-          if (
-            this.filters.resolved &&
-            a.amountOfResolvedItems !== b.amountOfResolvedItems
-          ) {
+          if (this.filters.resolved && a.amountOfResolvedItems !== b.amountOfResolvedItems) {
             return b.amountOfResolvedItems - a.amountOfResolvedItems
           }
 
-          if (
-            this.filters.donated &&
-            a.amountOfDonatedItems !== b.amountOfDonatedItems
-          ) {
+          if (this.filters.donated && a.amountOfDonatedItems !== b.amountOfDonatedItems) {
             return b.amountOfDonatedItems - a.amountOfDonatedItems
           }
 
@@ -130,9 +109,7 @@ export default {
     drop(event) {
       document.body.classList.remove('dragover')
 
-      const droppedFiles = Array.from(
-        event.dataTransfer ? event.dataTransfer.files : event.target.files
-      )
+      const droppedFiles = Array.from(event.dataTransfer ? event.dataTransfer.files : event.target.files)
 
       for (const file of droppedFiles) {
         const reader = new FileReader()
@@ -145,7 +122,16 @@ export default {
     processFile(filename, content) {
       const logs = content.trim()
 
-      let matches = [...logs.matchAll(regex.lootLogRe)]
+      let matches = [...logs.matchAll(regex.aoLootLogRe)]
+
+      if (matches.length) {
+        return this.$store.commit('addLootLogs', {
+          filename,
+          matches
+        })
+      }
+
+      matches = [...logs.matchAll(regex.lootLogRe)]
 
       if (matches.length) {
         return this.$store.commit('addLootLogs', {
