@@ -32,20 +32,12 @@
       </div>
     </div>
 
-    <div class="content file-upload" v-else>
-      <input
-        class="form-control"
-        type="file"
-        name="file-upload"
-        id="file-upload"
-        accept=".txt,.csv"
-        multiple
-        @change="drop"
-      />
+    <div class="content file-upload">
+      <Upload @change="drop" :popup="hasFiles" />
 
-      <a href="#faq">Read the FAQ</a>
+      <a href="#faq" v-if="!hasFiles">Read the FAQ</a>
 
-      <FAQ />
+      <FAQ v-if="!hasFiles" />
     </div>
 
     <Footer />
@@ -64,6 +56,7 @@ import PlayerLoot from './components/PlayerLoot.vue'
 import regex from './utils/regex'
 import Logo from './components/Logo.vue'
 import FAQ from './components/FAQ.vue'
+import Upload from './components/Upload.vue'
 
 export default {
   name: 'App',
@@ -73,7 +66,8 @@ export default {
     GitHubCorner,
     Footer,
     Logo,
-    FAQ
+    FAQ,
+    Upload
   },
   computed: {
     ...mapState(['filters']),
@@ -240,14 +234,6 @@ a {
   display: flex;
   flex-direction: column;
   align-items: center;
-
-  &.file-upload {
-    input.form-control {
-      max-width: 350px;
-      margin-top: 3rem;
-      margin-bottom: 2rem;
-    }
-  }
 }
 
 table {
