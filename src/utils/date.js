@@ -1,16 +1,23 @@
 import moment from 'moment'
 
-const regex = /(\d?\d:\d\d:\d\d)/
-
 export function strToDate(str) {
-  const result = regex.exec(str)
-
-  if (result == null) {
-    console.log(str, result)
-    return moment.utc('')
+  if (str.match(/\d+\/\d+\/\d+ \d+:\d+:\d+/)) {
+    return moment.utc(str, 'M/D/YYYY k:mm:ss')
   }
 
-  return moment.utc(result[1], 'hh:mm:ss')
+  if (str.match(/\d+-\d+-\d+T\d+:\d+:\d+\.\d+Z/)) {
+    return moment.utc(str, moment.ISO_8601)
+  }
+
+  const date = moment(str)
+
+  if (date.format() !== 'Invalid date') {
+    return date
+  }
+
+  console.error('Date format not recognized', str)
+
+  return moment.utc('')
 }
 
 export function dateToStr(date) {
