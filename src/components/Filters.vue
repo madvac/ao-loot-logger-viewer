@@ -99,7 +99,7 @@ export default {
       let content = []
 
       function template(history) {
-        return `${history.lootedAt.toISOString()},${history.itemId},${itemsIdToName[history.itemId]}.${
+        return `${history.lootedAt.toISOString()},${history.itemId},${itemsIdToName[history.itemId]},${
           history.lootedBy
         },${history.amount},${history.lootedFrom}`
       }
