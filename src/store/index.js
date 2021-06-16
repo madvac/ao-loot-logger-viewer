@@ -217,8 +217,6 @@ export default new Vuex.Store({
           } else {
             player.pickedUpItems[loot.itemId].amount -= loot.amount
           }
-
-          player.amountOfPickedUpItems -= loot.amount
         }
       }
 
@@ -268,8 +266,6 @@ export default new Vuex.Store({
           } else {
             pickedUpItem.amount -= donation.amount
           }
-
-          player.amountOfPickedUpItems -= donation.amount
         }
 
         // if after considering the picked up items, we still have extra items donated, add them to

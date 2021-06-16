@@ -38,7 +38,7 @@
         </button>
         <div class="filter-name">{{ name }}</div>
       </div>
-      <div class="filter" v-if="fileSaverSupport">
+      <div class="filter" v-if="fileSaverSupport" title="Export missing items as CSV">
         <button @click="onExport" :disabled="downloading || !hasContent">
           <svg aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
             <path
@@ -55,6 +55,8 @@
 
 <script>
 import { mapState, mapGetters, mapMutations } from 'vuex'
+
+import itemsIdToName from '../utils/items-id-to-name.json'
 
 let saveAs = null
 
@@ -97,9 +99,9 @@ export default {
       let content = []
 
       function template(history) {
-        return `${history.lootedAt.toISOString()};${history.lootedBy};${history.itemId};${history.amount};${
-          history.lootedFrom
-        }`
+        return `${history.lootedAt.toISOString()},${history.itemId},${itemsIdToName[history.itemId]}.${
+          history.lootedBy
+        },${history.amount},${history.lootedFrom}`
       }
 
       for (const playerName in this.filteredPlayers) {
@@ -116,10 +118,9 @@ export default {
 
       const blob = new Blob([content.join('\n')], { type: 'text/plain;charset=utf-8' })
 
-      saveAs(blob, `ao-loot-viewer-${new Date().getTime()}.txt`)
+      saveAs(blob, `ao-loot-viewer-${new Date().getTime()}.csv`)
 
       this.downloading = false
-      // todo: download content as file
     }
   }
 }
