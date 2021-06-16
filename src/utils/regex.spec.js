@@ -53,6 +53,13 @@ describe('Regex', () => {
 
       expect(results.length).toBe(0)
     })
+
+    it('should NOT match with chest logs', () => {
+      const line = `06/15/2021 19:52:26,matheussampaio,Adept's Martlock Cape,2,3,1`
+      const results = [...line.matchAll(regex.aoLootLogRe)]
+
+      expect(results.length).toBe(0)
+    })
   })
 
   describe('AO Loot Logs Regex', () => {
@@ -119,6 +126,13 @@ describe('Regex', () => {
 
       expect(results.length).toBe(0)
     })
+
+    it('should NOT match with chest logs', () => {
+      const line = `06/15/2021 19:52:26,matheussampaio,Adept's Martlock Cape,2,3,1`
+      const results = [...line.matchAll(regex.aoLootLogRe)]
+
+      expect(results.length).toBe(0)
+    })
   })
 
   describe('Chest Logs Regex', () => {
@@ -178,6 +192,63 @@ describe('Regex', () => {
     })
   })
 
+  describe('Chest Logs CSV Regex', () => {
+    it('should match with chest logs', () => {
+      const lines = [
+        `06/15/2021 18:58:43,matheussampaio,Grandmaster's Knight Helmet,1,2,-5`,
+        `06/15/2021 19:52:26,matheussampaio,Adept's Martlock Cape,2,3,1`
+      ].join('\n')
+      const results = [...lines.matchAll(regex.chestLogCsvRe)]
+
+      expect(results.length).toBe(2)
+
+      const result = results[0]
+
+      expect(result).not.toBeNull()
+
+      expect(result.groups.donatedAt).toBe('06/15/2021 18:58:43')
+      expect(result.groups.donatedBy).toBe('matheussampaio')
+      expect(result.groups.itemName).toBe(`Grandmaster's Knight Helmet`)
+      expect(result.groups.itemEnchant).toBe('1')
+      expect(result.groups.amount).toBe('-5')
+    })
+
+    it('should NOT match with guilds member list', () => {
+      const line = `matheussampaio`
+      const results = [...line.matchAll(regex.chestLogCsvRe)]
+
+      expect(results.length).toBe(0)
+    })
+
+    it('should NOT match with guild logs as guilds member list', () => {
+      const line = `"1"	"matheussampaio"	""	"55738"`
+      const results = [...line.matchAll(regex.chestLogCsvRe)]
+
+      expect(results.length).toBe(0)
+    })
+
+    it('should NOT match with AO Loot Logs style', () => {
+      const line = `5/7/2021 3:00:02;matheussampaio1;T7_POTION_STONESKIN;200;matheussampaio2`
+      const results = [...line.matchAll(regex.chestLogCsvRe)]
+
+      expect(results.length).toBe(0)
+    })
+
+    it('should NOT match with MS Loot Logs style', () => {
+      const line = `2021-06-07T22:25:16.432Z;matheussampaio1;T8_CAPEITEM_FW_BRIDGEWATCH;1;matheussampaio2;Elder's Bridgewatch Cape`
+      const results = [...line.matchAll(regex.chestLogCsvRe)]
+
+      expect(results.length).toBe(0)
+    })
+
+    it('should NOT match with chest logs head', () => {
+      const line = `Date,Player,Item,Enchantment,Quality,Amount`
+      const results = [...line.matchAll(regex.chestLogCsvRe)]
+
+      expect(results.length).toBe(0)
+    })
+  })
+
   describe('::Guild Member List Regex', () => {
     it('should match with guild logs member list', () => {
       const lines = [`"1"	"matheussampaio"	""	"55738"`, `"1"	"username2"	""	"10000"`].join('\n')
@@ -229,6 +300,13 @@ describe('Regex', () => {
     it('should NOT match with guild logs head', () => {
       const line = `"Rank"	"Player"	"Guild Role"	"Amount"`
       const results = [...line.matchAll(regex.guildMemberLogRe)]
+
+      expect(results.length).toBe(0)
+    })
+
+    it('should NOT match with chest logs', () => {
+      const line = `06/15/2021 19:52:26,matheussampaio,Adept's Martlock Cape,2,3,1`
+      const results = [...line.matchAll(regex.aoLootLogRe)]
 
       expect(results.length).toBe(0)
     })

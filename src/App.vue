@@ -144,6 +144,15 @@ export default {
         })
       }
 
+      matches = [...logs.matchAll(regex.chestLogCsvRe)]
+
+      if (matches.length) {
+        return this.$store.commit('addChestLogs', {
+          filename,
+          matches
+        })
+      }
+
       matches = [...logs.matchAll(regex.guildMemberLogRe)]
 
       if (matches.length) {
