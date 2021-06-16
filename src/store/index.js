@@ -133,7 +133,7 @@ export default new Vuex.Store({
 
       const loot = Object.values(donatedLoot)
 
-      loot.sort((a, b) => b.itemId.localeCompare(a.itemId))
+      loot.sort((a, b) => a.donatedAt - b.donatedAt)
 
       return deepFreeze(loot)
     },
@@ -272,7 +272,8 @@ export default new Vuex.Store({
           player.amountOfPickedUpItems -= donation.amount
         }
 
-        // after considering the picked up items we still have extra items donated, add it the out list.
+        // if after considering the picked up items, we still have extra items donated, add them to
+        // the donated list.
         if (extraItemsDonated) {
           if (player.donatedItems[donation.itemId] == null) {
             player.donatedItems[donation.itemId] = {
@@ -319,15 +320,15 @@ export default new Vuex.Store({
       for (const playerName in players) {
         const player = players[playerName]
 
-        if (Object.keys(player.pickedUpItems).length > 0) {
+        if (player.amountOfPickedUpItems) {
           continue
         }
 
-        if (state.filters.resolved && Object.keys(player.resolvedItems).length > 0) {
+        if (state.filters.resolved && player.amountOfResolvedItems) {
           continue
         }
 
-        if (state.filters.donated && Object.keys(player.donatedItems).length > 0) {
+        if (state.filters.donated && player.amountOfDonatedItems) {
           continue
         }
 
@@ -402,7 +403,7 @@ export default new Vuex.Store({
         }
       }
 
-      loot.sort((a, b) => b.itemId.localeCompare(a.itemId))
+      loot.sort((a, b) => a.lootedAt - b.lootedAt)
 
       return deepFreeze(loot)
     },

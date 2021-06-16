@@ -38,12 +38,25 @@
         </button>
         <div class="filter-name">{{ name }}</div>
       </div>
+      <div class="filter" v-if="fileSaverSupport">
+        <button @click="onExport" :disabled="downloading || !hasContent">
+          <svg aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path
+              fill="currentColor"
+              d="M216 0h80c13.3 0 24 10.7 24 24v168h87.7c17.8 0 26.7 21.5 14.1 34.1L269.7 378.3c-7.5 7.5-19.8 7.5-27.3 0L90.1 226.1c-12.6-12.6-3.7-34.1 14.1-34.1H192V24c0-13.3 10.7-24 24-24zm296 376v112c0 13.3-10.7 24-24 24H24c-13.3 0-24-10.7-24-24V376c0-13.3 10.7-24 24-24h146.7l49 49c20.1 20.1 52.5 20.1 72.6 0l49-49H488c13.3 0 24 10.7 24 24zm-124 88c0-11-9-20-20-20s-20 9-20 20 9 20 20 20 20-9 20-20zm64 0c0-11-9-20-20-20s-20 9-20 20 9 20 20 20 20-9 20-20z"
+            ></path>
+          </svg>
+        </button>
+        <div class="filter-name">Export</div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { mapState, mapMutations } from 'vuex'
+import { mapState, mapGetters, mapMutations } from 'vuex'
+
+let saveAs = null
 
 export default {
   name: 'Filters',
@@ -53,15 +66,66 @@ export default {
     }
   },
   computed: {
-    ...mapState(['filters'])
+    ...mapState(['filters']),
+    ...mapGetters(['filteredPlayers']),
+    hasContent() {
+      return Object.keys(this.filteredPlayers).length > 0
+    },
+    fileSaverSupport() {
+      try {
+        return !!new Blob()
+      } catch (e) {
+        return false
+      }
+    }
   },
   methods: {
-    ...mapMutations(['toggleFilter'])
+    ...mapMutations(['toggleFilter']),
+    async onExport() {
+      if (this.downloading) {
+        return
+      }
+
+      this.downloading = true
+
+      if (saveAs == null) {
+        const fileSaver = await import('file-saver')
+
+        saveAs = fileSaver.saveAs
+      }
+
+      let content = []
+
+      function template(history) {
+        return `${history.lootedAt.toISOString()};${history.lootedBy};${history.itemId};${history.amount};${
+          history.lootedFrom
+        }`
+      }
+
+      for (const playerName in this.filteredPlayers) {
+        const player = this.filteredPlayers[playerName]
+
+        for (const itemId in player.pickedUpItems) {
+          const item = player.pickedUpItems[itemId]
+
+          for (const history of item.history) {
+            content.push(template(history))
+          }
+        }
+      }
+
+      const blob = new Blob([content.join('\n')], { type: 'text/plain;charset=utf-8' })
+
+      saveAs(blob, `ao-loot-viewer-${new Date().getTime()}.txt`)
+
+      this.downloading = false
+      // todo: download content as file
+    }
   }
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .container {
   width: 100%;
   display: flex;
@@ -99,11 +163,12 @@ svg {
   width: 16px;
   margin-left: 4px;
   margin-bottom: 4px;
-  cursor: pointer;
+  color: var(--primary-color);
 }
 
-svg.eye {
-  color: var(--primary-color);
+button[disabled] svg {
+  color: #808080;
+  cursor: not-allowed;
 }
 
 svg.eye-slash {
