@@ -482,6 +482,7 @@ export default new Vuex.Store({
         filterPatterns.push(/^T\d_CAPEITEM_FW_LYMHURST(?:@\d)?$/)
         filterPatterns.push(/^T\d_CAPEITEM_FW_MARTLOCK(?:@\d)?$/)
         filterPatterns.push(/^T\d_CAPEITEM_FW_THETFORD(?:@\d)?$/)
+        filterPatterns.push(/^T\d_CAPEITEM_FW_CAERLEON(?:@\d)?$/)
 
         filterPatterns.push(/^T\d_CAPEITEM_DEMON(?:@\d)?$/)
         filterPatterns.push(/^T\d_CAPEITEM_HERETIC(?:@\d)?$/)
