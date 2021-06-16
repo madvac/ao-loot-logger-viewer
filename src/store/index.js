@@ -559,6 +559,7 @@ export default new Vuex.Store({
         filterPatterns.push(/QUESTITEM_EXP_TOKEN/)
         filterPatterns.push(/QUESTITEM_TOKEN/)
         filterPatterns.push(/TREASURE/)
+        filterPatterns.push(/T\d_WORM/)
 
         filterPatterns.push(/_EVENT_EASTER_/)
 
