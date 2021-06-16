@@ -180,6 +180,10 @@ svg.download {
   color: #e43333;
 }
 
+svg:hover {
+  color: var(--secondary-color);
+}
+
 button {
   border: none;
   background: none;

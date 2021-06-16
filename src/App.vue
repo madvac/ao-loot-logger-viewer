@@ -187,6 +187,8 @@ export default {
     }
   },
   async mounted() {
+    window.items = Items
+
     setTimeout(() => {
       if (!this.initialized) {
         this.showProgressBar = true
