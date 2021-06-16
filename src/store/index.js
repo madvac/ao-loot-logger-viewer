@@ -3,8 +3,9 @@ import Vuex from 'vuex'
 import VuexPersistence from 'vuex-persist'
 
 import deepFreeze from '../utils/deepFreeze'
-import items from '../utils/items.json'
+import Items from '../utils/items'
 import { strToDate } from '../utils/date'
+import shouldFilterItem from '../utils/should-filter-item'
 
 Vue.use(Vuex)
 
@@ -22,6 +23,7 @@ export default new Vuex.Store({
     selectedPlayersLogs: {},
     chestLogs: {},
     filters: {
+      t1: false,
       t2: false,
       t3: false,
       t4: true,
@@ -58,7 +60,13 @@ export default new Vuex.Store({
         const amount = parseInt(match.groups.amount, 10)
         const lootedFrom = match.groups.lootedFrom
 
-        const log = { lootedAt, lootedBy, itemId, amount, lootedFrom }
+        const info = Items.getInfoFromId(itemId)
+
+        const tier = info.tier
+        const category = info.category
+        const subcategory = info.subcategory
+
+        const log = { lootedAt, lootedBy, itemId, amount, lootedFrom, tier, category, subcategory }
 
         loot.push(log)
       }
@@ -88,7 +96,13 @@ export default new Vuex.Store({
         const itemEnchant = parseInt(match.groups.itemEnchant, 10)
         const amount = parseInt(match.groups.amount, 10)
 
-        let itemId = items[itemName]
+        const info = Items.getInfoFromName(itemName)
+
+        const tier = info.tier
+        const category = info.category
+        const subcategory = info.subcategory
+
+        let itemId = info.id
 
         if (itemId == null) {
           console.error(`item not found: "${itemName}"`)
@@ -100,7 +114,7 @@ export default new Vuex.Store({
         }
 
         if (amount > 0) {
-          const log = { donatedAt, donatedBy, itemId, itemEnchant, amount }
+          const log = { donatedAt, donatedBy, itemId, itemEnchant, amount, tier, category, subcategory }
 
           donations.push(log)
         }
@@ -244,7 +258,9 @@ export default new Vuex.Store({
             player.resolvedItems[donation.itemId] = {
               id: donation.itemId,
               amount: 0,
-              history: []
+              history: [],
+              category: donation.category,
+              subcategory: donation.subcategory
             }
           }
 
@@ -275,7 +291,9 @@ export default new Vuex.Store({
             player.donatedItems[donation.itemId] = {
               id: donation.itemId,
               amount: 0,
-              history: []
+              history: [],
+              category: donation.category,
+              subcategory: donation.subcategory
             }
           }
 
@@ -404,176 +422,14 @@ export default new Vuex.Store({
       return deepFreeze(loot)
     },
     filteredLoot(state, getters) {
-      const filteredLoot = getters.allLoot.filter(loot => {
-        const hideItem = getters.filterPatterns.some(pattern => loot.itemId.match(pattern))
-
-        return !hideItem
-      })
+      const filteredLoot = getters.allLoot.filter(loot => shouldFilterItem(loot, state.filters))
 
       return deepFreeze(filteredLoot)
     },
     filteredDonations(state, getters) {
-      const filteredDonations = getters.donatedLoot.filter(loot => {
-        const hideItem = getters.filterPatterns.some(pattern => loot.itemId.match(pattern))
-
-        return !hideItem
-      })
+      const filteredDonations = getters.donatedLoot.filter(loot => shouldFilterItem(loot, state.filters))
 
       return deepFreeze(filteredDonations)
-    },
-    filterPatterns(state) {
-      const filterPatterns = []
-
-      if (!state.filters.t2) {
-        filterPatterns.push(/^T2/)
-      }
-
-      if (!state.filters.t3) {
-        filterPatterns.push(/^T3/)
-      }
-
-      if (!state.filters.t4) {
-        filterPatterns.push(/^T4/)
-      }
-
-      if (!state.filters.t5) {
-        filterPatterns.push(/^T5/)
-      }
-
-      if (!state.filters.t6) {
-        filterPatterns.push(/^T6/)
-      }
-
-      if (!state.filters.t7) {
-        filterPatterns.push(/^T7/)
-      }
-
-      if (!state.filters.t8) {
-        filterPatterns.push(/^T8/)
-      }
-
-      if (!state.filters.trash) {
-        filterPatterns.push(/_TRASH/)
-      }
-
-      if (!state.filters.bag) {
-        filterPatterns.push(/_BAG/)
-        filterPatterns.push(/_BAG_INSIGHT/)
-      }
-
-      if (!state.filters.potion) {
-        filterPatterns.push(/_POTION_/)
-      }
-
-      if (!state.filters.food) {
-        filterPatterns.push(/_FISH_FRESHWATER_/)
-        filterPatterns.push(/_FISH_SALTWATER_/)
-        filterPatterns.push(/_MEAL_/)
-      }
-
-      if (!state.filters.cape) {
-        filterPatterns.push(/^T\d_CAPE(?:@\d)?$/)
-
-        filterPatterns.push(/^T\d_CAPEITEM_FW_BRIDGEWATCH(?:@\d)?$/)
-        filterPatterns.push(/^T\d_CAPEITEM_FW_FORTSTERLING(?:@\d)?$/)
-        filterPatterns.push(/^T\d_CAPEITEM_FW_LYMHURST(?:@\d)?$/)
-        filterPatterns.push(/^T\d_CAPEITEM_FW_MARTLOCK(?:@\d)?$/)
-        filterPatterns.push(/^T\d_CAPEITEM_FW_THETFORD(?:@\d)?$/)
-        filterPatterns.push(/^T\d_CAPEITEM_FW_CAERLEON(?:@\d)?$/)
-
-        filterPatterns.push(/^T\d_CAPEITEM_DEMON(?:@\d)?$/)
-        filterPatterns.push(/^T\d_CAPEITEM_HERETIC(?:@\d)?$/)
-        filterPatterns.push(/^T\d_CAPEITEM_KEEPER(?:@\d)?$/)
-        filterPatterns.push(/^T\d_CAPEITEM_MORGANA(?:@\d)?$/)
-        filterPatterns.push(/^T\d_CAPEITEM_UNDEAD(?:@\d)?$/)
-      }
-
-      if (!state.filters.mount) {
-        filterPatterns.push(/_MOUNT_ARMORED_HORSE_MORGANA@1/)
-        filterPatterns.push(/_MOUNT_ARMORED_HORSE/)
-        filterPatterns.push(/_MOUNT_COUGAR_KEEPER@1/)
-        filterPatterns.push(/_MOUNT_DIREBEAR_FW_FORTSTERLING/)
-        filterPatterns.push(/_MOUNT_DIREBEAR/)
-        filterPatterns.push(/_MOUNT_DIREBOAR_FW_LYMHURST/)
-        filterPatterns.push(/_MOUNT_DIREBOAR/)
-        filterPatterns.push(/_MOUNT_DIREWOLF/)
-        filterPatterns.push(/_MOUNT_FROSTRAM_ADC/)
-        filterPatterns.push(/_MOUNT_GIANTSTAG_MOOSE/)
-        filterPatterns.push(/_MOUNT_GIANTSTAG/)
-        filterPatterns.push(/_MOUNT_HORSE_UNDEAD@1/)
-        filterPatterns.push(/_MOUNT_HORSE/)
-        filterPatterns.push(/_MOUNT_HUSKY_ADC/)
-        filterPatterns.push(/_MOUNT_MOABIRD_FW_BRIDGEWATCH/)
-        filterPatterns.push(/_MOUNT_MONITORLIZARD_ADC/)
-        filterPatterns.push(/_MOUNT_MULE/)
-        filterPatterns.push(/_MOUNT_OX/)
-        filterPatterns.push(/_MOUNT_RAM_FW_MARTLOCK/)
-        filterPatterns.push(/_MOUNT_SWAMPDRAGON_FW_THETFORD/)
-        filterPatterns.push(/_MOUNT_SWAMPDRAGON/)
-        filterPatterns.push(/_MOUNT_TERRORBIRD_ADC/)
-        filterPatterns.push(/T5_MOUNT_DIREBEAR_FW_FORTSTERLING/)
-        filterPatterns.push(/T5_MOUNT_DIREBOAR_FW_LYMHURST/)
-        filterPatterns.push(/T5_MOUNT_GREYWOLF_FW_CAERLEON/)
-        filterPatterns.push(/T5_MOUNT_MOABIRD_FW_BRIDGEWATCH/)
-        filterPatterns.push(/T5_MOUNT_RAM_FW_MARTLOCK/)
-        filterPatterns.push(/T5_MOUNT_SWAMPDRAGON_FW_THETFORD/)
-        filterPatterns.push(/T8_MOUNT_DIREBEAR_FW_FORTSTERLING_ELITE/)
-        filterPatterns.push(/T8_MOUNT_DIREBOAR_FW_LYMHURST_ELITE/)
-        filterPatterns.push(/T8_MOUNT_GREYWOLF_FW_CAERLEON_ELITE/)
-        filterPatterns.push(/T8_MOUNT_MOABIRD_FW_BRIDGEWATCH_ELITE/)
-        filterPatterns.push(/T8_MOUNT_RAM_FW_MARTLOCK_ELITE/)
-        filterPatterns.push(/T8_MOUNT_SWAMPDRAGON_FW_THETFORD_ELITE/)
-        filterPatterns.push(/UNIQUE_MOUNT_BAT_PERSONAL/)
-        filterPatterns.push(/UNIQUE_MOUNT_BEAR_KEEPER_ADC/)
-        filterPatterns.push(/UNIQUE_MOUNT_BLACK_PANTHER_ADC/)
-        filterPatterns.push(/UNIQUE_MOUNT_DIVINE_OWL_ADC/)
-        filterPatterns.push(/UNIQUE_MOUNT_GIANT_HORSE_ADC/)
-        filterPatterns.push(/UNIQUE_MOUNT_HERETIC_MULE_ADC/)
-        filterPatterns.push(/UNIQUE_MOUNT_MORGANA_RAVEN_ADC/)
-        filterPatterns.push(/UNIQUE_MOUNT_UNDEAD_DIREBOAR_ADC/)
-      }
-
-      if (!state.filters.others) {
-        filterPatterns.push(/_ARTEFACT_/)
-
-        filterPatterns.push(/_ESSENCE/)
-        filterPatterns.push(/_RELIC/)
-        filterPatterns.push(/_RUNE/)
-        filterPatterns.push(/_SHARD_AVALONIAN/)
-        filterPatterns.push(/_SOUL/)
-
-        filterPatterns.push(/_RANDOM_DUNGEON_ELITE_TOKEN_/)
-        filterPatterns.push(/_RANDOM_DUNGEON_SOLO_TOKEN_/)
-        filterPatterns.push(/_RANDOM_DUNGEON_TOKEN_/)
-
-        filterPatterns.push(/_FARM/)
-        filterPatterns.push(/_GVGTOKEN_/)
-        filterPatterns.push(/_JOURNAL_/)
-        filterPatterns.push(/_SEAWEED/)
-        filterPatterns.push(/_SKILLBOOK/)
-        filterPatterns.push(/_TOOL_/)
-        filterPatterns.push(/_VANITY_/)
-        filterPatterns.push(/FURNITUREITEM/)
-        filterPatterns.push(/QUESTITEM_EXP_TOKEN/)
-        filterPatterns.push(/QUESTITEM_TOKEN/)
-        filterPatterns.push(/TREASURE/)
-        filterPatterns.push(/T\d_WORM/)
-
-        filterPatterns.push(/_EVENT_EASTER_/)
-
-        filterPatterns.push(/T\d_CLOTH/)
-        filterPatterns.push(/T\d_FIBER/)
-        filterPatterns.push(/T\d_HIDE/)
-        filterPatterns.push(/T\d_LEATHER/)
-        filterPatterns.push(/T\d_METALBAR/)
-        filterPatterns.push(/T\d_ORE/)
-        filterPatterns.push(/T\d_PLANKS/)
-        filterPatterns.push(/T\d_ROCK/)
-        filterPatterns.push(/T\d_STONEBLOCK/)
-        filterPatterns.push(/T\d_WOOD/)
-      }
-
-      return deepFreeze(filterPatterns)
     },
     donationsByPlayer(state, getters) {
       const donationsByPlayer = {}

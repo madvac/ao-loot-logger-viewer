@@ -13,6 +13,8 @@
         :type="item.type"
         :amount="item.amount"
         :history="item.history"
+        :subcategory="item.subcategory"
+        :category="item.category"
       />
     </transition-group>
   </tr>
@@ -60,11 +62,10 @@ export default {
         const item = this.pickedUpItems[itemId]
 
         items.push({
-          key: `pickedup-${itemId}`,
           itemId,
+          key: `pickedup-${itemId}`,
           type: 'pickedup',
-          amount: item.amount,
-          history: item.history
+          ...item
         })
       }
 
@@ -72,11 +73,10 @@ export default {
         const item = this.resolvedItems[itemId]
 
         items.push({
-          key: `resolved-${itemId}`,
           itemId,
+          key: `resolved-${itemId}`,
           type: 'resolved',
-          amount: item.amount,
-          history: item.history
+          ...item
         })
       }
 
@@ -84,11 +84,10 @@ export default {
         const item = this.lostItems[itemId]
 
         items.push({
-          key: `lost-${itemId}`,
           itemId,
+          key: `lost-${itemId}`,
           type: 'lost',
-          amount: item.amount,
-          history: item.history
+          ...item
         })
       }
 
@@ -96,11 +95,10 @@ export default {
         const item = this.donatedItems[itemId]
 
         items.push({
-          key: `donation-${itemId}`,
           itemId,
+          key: `donation-${itemId}`,
           type: 'donation',
-          amount: item.amount,
-          history: item.history
+          ...item
         })
       }
 

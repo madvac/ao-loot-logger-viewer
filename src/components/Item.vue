@@ -5,7 +5,8 @@
       donated: type === 'donation',
       lost: type === 'lost',
       resolved: type === 'resolved',
-      loaded: loaded
+      loaded: loaded,
+      gold: isGold
     }"
   >
     <img :src="url" :title="title" loading="lazy" @load="onLoad" />
@@ -14,7 +15,7 @@
 </template>
 
 <script>
-import itemsIdToName from '../utils/items-id-to-name.json'
+import Items from '../utils/items'
 import { dateToStr } from '../utils/date'
 
 export default {
@@ -40,9 +41,23 @@ export default {
     amount: {
       type: Number,
       default: () => 1
+    },
+    category: {
+      type: String,
+      default: () => ''
+    },
+    subcategory: {
+      type: String,
+      default: () => ''
     }
   },
   computed: {
+    isGold() {
+      const t83 = this.id.indexOf('T8') !== -1 && this.id.indexOf('@3') !== -1
+      const battleMount = this.category === 'mounts' && this.subcategory === 'battle_mount'
+
+      return t83 || battleMount
+    },
     url() {
       return `https://render.albiononline.com/v1/item/${this.id}.png?count=1&quality=1&size=217`
     },
@@ -59,7 +74,7 @@ export default {
         strs = this.history.map((e) => `${e.amount}x looted from ${e.lootedFrom} on ${dateToStr(e.lootedAt)}`)
       }
 
-      return [`${itemsIdToName[this.id]} - ${this.id}`, '', ...strs].join('\n')
+      return [`${Items.getNameFromId(this.id)} - ${this.id}`, '', ...strs].join('\n')
     }
   },
   methods: {
@@ -113,15 +128,19 @@ img {
   text-align: center;
 }
 
-.donated {
+.gold {
+  filter: drop-shadow(0 0 4px #ffaa00);
+}
+
+.donated img {
   filter: sepia(100%) saturate(200%) hue-rotate(90deg);
 }
 
-.lost {
+.lost img {
   filter: sepia(100%) saturate(200%) hue-rotate(-60deg);
 }
 
-.resolved {
+.resolved img {
   filter: grayscale(100%);
 }
 </style>

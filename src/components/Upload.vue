@@ -9,6 +9,7 @@
       multiple
       @change="(e) => $emit('change', e)"
       :hidden="popup"
+      :disabled="disabled"
     />
     <label for="upload-input" v-if="popup"
       ><svg
@@ -32,6 +33,10 @@ export default {
   name: 'Upload',
   props: {
     popup: {
+      type: Boolean,
+      default: false
+    },
+    disabled: {
       type: Boolean,
       default: false
     }

@@ -1,5 +1,15 @@
 <template>
-  <div class="home" @drop.prevent="drop" @dragover.prevent="dragover" @dragleave.prevent="dragleave">
+  <div
+    class="home"
+    @drop.prevent="drop"
+    @dragover.prevent="dragover"
+    @dragleave.prevent="dragleave"
+    :class="{ loading: !initialized }"
+  >
+    <div class="progress" v-if="!initialized && showProgressBar">
+      <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+    </div>
+
     <Logo :small="hasFiles" @click="reset" />
 
     <div class="content" v-if="hasFiles">
@@ -33,7 +43,7 @@
     </div>
 
     <div class="content file-upload">
-      <Upload @change="drop" :popup="hasFiles" />
+      <Upload @change="drop" :popup="hasFiles" :disabled="!initialized" />
 
       <a href="#faq" v-if="!hasFiles">Read the FAQ</a>
 
@@ -58,6 +68,7 @@ import regex from './utils/regex'
 import Logo from './components/Logo.vue'
 import FAQ from './components/FAQ.vue'
 import Upload from './components/Upload.vue'
+import Items from './utils/items'
 
 export default {
   name: 'App',
@@ -69,6 +80,12 @@ export default {
     Logo,
     FAQ,
     Upload
+  },
+  data() {
+    return {
+      initialized: false,
+      showProgressBar: false
+    }
   },
   computed: {
     ...mapState(['filters']),
@@ -103,6 +120,10 @@ export default {
     },
     drop(event) {
       document.body.classList.remove('dragover')
+
+      if (!this.initialized) {
+        return
+      }
 
       const droppedFiles = Array.from(event.dataTransfer ? event.dataTransfer.files : event.target.files)
 
@@ -164,6 +185,19 @@ export default {
 
       return iziToast.show({ title: 'Error', message: `No matches from this file.` })
     }
+  },
+  async mounted() {
+    setTimeout(() => {
+      if (!this.initialized) {
+        this.showProgressBar = true
+
+        console.log('show progress bar')
+      }
+    }, 1500)
+
+    await Items.init()
+
+    this.initialized = true
   }
 }
 </script>
@@ -269,5 +303,36 @@ th {
   text-align: center;
   min-width: 200px;
   vertical-align: middle;
+}
+
+.loading,
+.loading * {
+  cursor: wait !important;
+}
+
+.progress {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: 0.5rem;
+  border-radius: 0;
+  border: 0;
+
+  .progress-bar {
+    background-color: var(--primary-color);
+
+    &.progress-bar-striped {
+      background-image: linear-gradient(
+        45deg,
+        rgba(0, 0, 0, 0.2) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(0, 0, 0, 0.2) 50%,
+        rgba(0, 0, 0, 0.2) 75%,
+        transparent 75%,
+        transparent
+      );
+    }
+  }
 }
 </style>

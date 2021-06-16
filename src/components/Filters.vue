@@ -56,7 +56,7 @@
 <script>
 import { mapState, mapGetters, mapMutations } from 'vuex'
 
-import itemsIdToName from '../utils/items-id-to-name.json'
+import Items from '../utils/items'
 
 let saveAs = null
 
@@ -99,7 +99,7 @@ export default {
       let content = [`Pickup Time,Looted By,Item name,Item ID,Quantity,Looted From`]
 
       function template(history) {
-        return `${history.lootedAt.toISOString()},${history.lootedBy},${itemsIdToName[history.itemId]},${
+        return `${history.lootedAt.toISOString()},${history.lootedBy},${Items.getNameFromId(history.itemId)},${
           history.itemId
         },${history.amount},${history.lootedFrom}`
       }
