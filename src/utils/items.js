@@ -42,10 +42,12 @@ class Items {
       this.idToName[item.UniqueName] = name
       this.locNameVarToName[item.LocalizationNameVariable] = name
 
-      this.nameToInfo[name] = {
-        name,
-        id: item.UniqueName,
-        index: item.Index
+      if (this.nameToInfo[name] == null || item.UniqueName.indexOf('@') === -1) {
+        this.nameToInfo[name] = {
+          name,
+          id: item.UniqueName,
+          index: item.Index
+        }
       }
     }
 
