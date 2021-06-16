@@ -96,11 +96,11 @@ export default {
         saveAs = fileSaver.saveAs
       }
 
-      let content = [`Looted at,Item ID,Item name,Looted By,Amount,Looted From`]
+      let content = [`Pickup Time,Looted By,Item name,Item ID,Quantity,Looted From`]
 
       function template(history) {
-        return `${history.lootedAt.toISOString()},${history.itemId},${itemsIdToName[history.itemId]},${
-          history.lootedBy
+        return `${history.lootedAt.toISOString()},${history.lootedBy},${itemsIdToName[history.itemId]},${
+          history.itemId
         },${history.amount},${history.lootedFrom}`
       }
 
