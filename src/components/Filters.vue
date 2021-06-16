@@ -96,7 +96,7 @@ export default {
         saveAs = fileSaver.saveAs
       }
 
-      let content = []
+      let content = [`Looted at,Item ID,Item name,Looted By,Amount,Looted From`]
 
       function template(history) {
         return `${history.lootedAt.toISOString()},${history.itemId},${itemsIdToName[history.itemId]},${
