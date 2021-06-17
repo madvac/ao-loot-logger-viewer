@@ -289,8 +289,6 @@ export default {
         copyToClipboard(location.toString())
       } catch (error) {
         if (error?.response?.status === 403 && error?.response?.message?.indexOf('Requests exhausted') !== -1) {
-          this.blockSharing = true
-
           iziToast.error({
             title: 'Error',
             message: 'Sorry. The free database is exausted. :(',
@@ -301,6 +299,7 @@ export default {
       }
 
       this.sharing = false
+      this.blockSharing = true
     },
     async onExport() {
       if (this.exporting) {
