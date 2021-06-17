@@ -79,7 +79,7 @@ import { copyToClipboard } from './utils'
 
 let saveAs = null
 
-const db = new Database(process.env.VUE_APP_COLLECTION_ID, process.env.VUE_APP_BIN_KEY)
+const db = new Database(process.env.VUE_APP_BIN_KEY, process.env.VUE_APP_COLLECTION_ID)
 
 export default {
   name: 'App',
