@@ -49,6 +49,8 @@ export default new Vuex.Store({
       state.lootLogs = {}
       state.selectedPlayersLogs = {}
       state.chestLogs = {}
+
+      window.history.pushState({}, '', '/')
     },
     addLootLogs(state, { filename, matches }) {
       const loot = []

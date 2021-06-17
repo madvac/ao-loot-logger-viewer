@@ -4,7 +4,7 @@
     @drop.prevent="drop"
     @dragover.prevent="dragover"
     @dragleave.prevent="dragleave"
-    :class="{ loading: loading || sharing || exporting }"
+    :class="{ loading: loadingItems || loadingBin || sharing || exporting }"
   >
     <div class="progress" v-if="showProgressBar">
       <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
@@ -48,7 +48,7 @@
     </div>
 
     <div class="content file-upload">
-      <Upload @change="drop" :popup="hasFiles" :disabled="!initialized" />
+      <Upload @change="drop" :popup="hasFiles" :disabled="!initialized || loadingBin" />
 
       <a href="#faq" v-if="!hasFiles">Read the FAQ</a>
 
@@ -95,10 +95,11 @@ export default {
   data() {
     return {
       initialized: false,
-      loading: false,
+      loadingItems: false,
       sharing: false,
       exporting: false,
       blockSharing: false,
+      loadingBin: false,
       validDb: db.valid
     }
   },
@@ -129,11 +130,15 @@ export default {
         return true
       }
 
+      if (this.loadingBin) {
+        return true
+      }
+
       if (this.initialized) {
         return false
       }
 
-      return this.loading
+      return this.loadingItems
     }
   },
   methods: {
@@ -343,7 +348,7 @@ export default {
 
     setTimeout(() => {
       if (!this.initialized) {
-        this.loading = true
+        this.loadingItems = true
 
         console.log('show progress bar')
       }
@@ -352,7 +357,7 @@ export default {
     await Items.init()
 
     this.initialized = true
-    this.loading = false
+    this.loadingItems = false
 
     if (this.hasFiles || !this.validDb) {
       return
@@ -364,12 +369,14 @@ export default {
       return
     }
 
-    this.loading = true
+    this.loadingBin = true
 
     try {
       const { record } = await db.read(bin)
 
       this.setBin(record)
+
+      this.blockSharing = true
     } catch (error) {
       if (error?.response?.status === 403 && error?.response?.message?.indexOf('Requests exhausted') !== -1) {
         iziToast.error({
@@ -381,7 +388,7 @@ export default {
       }
     }
 
-    this.loading = false
+    this.loadingBin = false
   }
 }
 </script>
