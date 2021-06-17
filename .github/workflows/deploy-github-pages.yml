@@ -15,11 +15,15 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: npm install, build, and test
-        run: |
-          npm install
-          NODE_ENV=production npm run build --if-present
-          npm run test --if-present
+      - name: npm install
+        run: npm install
+      - name: npm test
+        run: npm run test --if-present
+      - name: npm build
+        env:
+          VUE_APP_BIN_KEY: ${{ secrets.VUE_APP_BIN_KEY }}
+          VUE_APP_COLLECTION_ID: ${{ secrets.VUE_APP_COLLECTION_ID }}
+        run: NODE_ENV=production npm run build --if-present
       - name: Deploy to GitHub Pages
         if: success()
         uses: crazy-max/ghaction-github-pages@v2

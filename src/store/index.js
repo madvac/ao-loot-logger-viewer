@@ -124,6 +124,37 @@ export default new Vuex.Store({
     },
     toggleFilter(state, name) {
       state.filters[name] = !state.filters[name]
+    },
+    setBin(state, data) {
+      for (const filename in data.selectedPlayersLogs) {
+        Vue.set(state.selectedPlayersLogs, filename, deepFreeze(data.selectedPlayersLogs[filename]))
+      }
+
+      for (const filename in data.chestLogs) {
+        Vue.set(
+          state.chestLogs,
+          filename,
+          deepFreeze(
+            data.chestLogs[filename].map(log => ({
+              ...log,
+              donatedAt: strToDate(log.donatedAt)
+            }))
+          )
+        )
+      }
+
+      for (const filename in data.lootLogs) {
+        Vue.set(
+          state.lootLogs,
+          filename,
+          deepFreeze(
+            data.lootLogs[filename].map(log => ({
+              ...log,
+              lootedAt: strToDate(log.lootedAt)
+            }))
+          )
+        )
+      }
     }
   },
   getters: {

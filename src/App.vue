@@ -4,16 +4,21 @@
     @drop.prevent="drop"
     @dragover.prevent="dragover"
     @dragleave.prevent="dragleave"
-    :class="{ loading: !initialized }"
+    :class="{ loading: loading || sharing || exporting }"
   >
-    <div class="progress" v-if="!initialized && showProgressBar">
+    <div class="progress" v-if="showProgressBar">
       <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
     </div>
 
     <Logo :small="hasFiles" @click="reset" />
 
     <div class="content" v-if="hasFiles">
-      <Filters />
+      <Filters
+        @share="onShare"
+        @export="onExport"
+        :disabledShare="sharing || !hasFiles || blockSharing"
+        :disabledExport="exporting || !hasFiles"
+      />
 
       <table id="loot-table" class="table table-bordered" v-if="sortedFilteredPlayers.length">
         <thead>
@@ -60,15 +65,18 @@
 import { mapGetters, mapMutations, mapState } from 'vuex'
 import iziToast from 'izitoast'
 
+import db from './utils/db'
+import FAQ from './components/FAQ.vue'
 import Filters from './components/Filters.vue'
 import Footer from './components/Footer.vue'
 import GitHubCorner from './components/GitHubCorner.vue'
+import Items from './utils/items'
+import Logo from './components/Logo.vue'
 import PlayerLoot from './components/PlayerLoot.vue'
 import regex from './utils/regex'
-import Logo from './components/Logo.vue'
-import FAQ from './components/FAQ.vue'
 import Upload from './components/Upload.vue'
-import Items from './utils/items'
+
+let saveAs = null
 
 export default {
   name: 'App',
@@ -84,11 +92,14 @@ export default {
   data() {
     return {
       initialized: false,
-      showProgressBar: false
+      loading: false,
+      sharing: false,
+      exporting: false,
+      blockSharing: false
     }
   },
   computed: {
-    ...mapState(['filters']),
+    ...mapState(['filters', 'lootLogs', 'chestLogs', 'selectedPlayersLogs']),
     ...mapGetters(['filteredPlayers', 'hasFiles']),
     sortedFilteredPlayers() {
       return Object.values(this.filteredPlayers)
@@ -108,10 +119,21 @@ export default {
           return 0
         })
         .map((p) => p.name)
+    },
+    showProgressBar() {
+      if (this.sharing) {
+        return true
+      }
+
+      if (this.initialized) {
+        return false
+      }
+
+      return this.loading
     }
   },
   methods: {
-    ...mapMutations(['reset']),
+    ...mapMutations(['reset', 'setBin']),
     dragover() {
       document.body.classList.add('dragover')
     },
@@ -183,15 +205,139 @@ export default {
         })
       }
 
-      return iziToast.show({ title: 'Error', message: `No matches from this file.` })
+      return iziToast.error({
+        title: 'Error',
+        message: `No matches from this file.`,
+        progressBarColor: 'red',
+        titleColor: 'red'
+      })
+    },
+    async onShare() {
+      if (this.sharing) {
+        return
+      }
+
+      this.sharing = true
+
+      const data = {
+        selectedPlayersLogs: {},
+        lootLogs: {},
+        chestLogs: {}
+      }
+
+      for (const file in this.lootLogs) {
+        const logs = []
+
+        for (const item of this.lootLogs[file]) {
+          logs.push({
+            ...item,
+            lootedAt: item.lootedAt.toISOString()
+          })
+        }
+
+        data.lootLogs[file] = logs
+      }
+
+      for (const file in this.chestLogs) {
+        const logs = []
+
+        for (const item of this.chestLogs[file]) {
+          logs.push({
+            ...item,
+            donatedAt: item.donatedAt.toISOString()
+          })
+        }
+
+        data.chestLogs[file] = logs
+      }
+
+      for (const file in this.selectedPlayersLogs) {
+        const players = []
+
+        for (const player of this.selectedPlayersLogs[file]) {
+          players.push({
+            ...player
+          })
+        }
+
+        data.selectedPlayersLogs[file] = players
+      }
+
+      let bin
+
+      try {
+        bin = await db.create(data)
+
+        window.history.replaceState({}, '', `?b=${bin}`)
+
+        iziToast.success({
+          title: 'Success',
+          message: 'Logs loaded from the database.',
+          progressBarColor: 'green',
+          titleColor: 'green'
+        })
+      } catch (error) {
+        if (error?.response?.status === 403 && error?.response?.message?.indexOf('Requests exhausted') !== -1) {
+          this.blockSharing = true
+
+          iziToast.error({
+            title: 'Error',
+            message: 'Sorry. The free database is exausted. :(',
+            progressBarColor: 'red',
+            titleColor: 'red'
+          })
+        }
+      }
+
+      this.sharing = false
+    },
+    async onExport() {
+      if (this.exporting) {
+        return
+      }
+
+      this.exporting = true
+
+      if (saveAs == null) {
+        const fileSaver = await import('file-saver')
+
+        saveAs = fileSaver.saveAs
+      }
+
+      let content = [`Pickup Time,Looted By,Item name,Item ID,Quantity,Looted From`]
+
+      function template(history) {
+        return `${history.lootedAt.toISOString()},${history.lootedBy},${Items.getNameFromId(history.itemId)},${
+          history.itemId
+        },${history.amount},${history.lootedFrom}`
+      }
+
+      for (const playerName in this.filteredPlayers) {
+        const player = this.filteredPlayers[playerName]
+
+        for (const itemId in player.pickedUpItems) {
+          const item = player.pickedUpItems[itemId]
+
+          for (const history of item.history) {
+            content.push(template(history))
+          }
+        }
+      }
+
+      const blob = new Blob([content.join('\n')], { type: 'text/plain;charset=utf-8' })
+
+      saveAs(blob, `ao-loot-viewer-${new Date().getTime()}.csv`)
+
+      this.exporting = false
     }
   },
   async mounted() {
     window.items = Items
+    window.iziToast = iziToast
 
     setTimeout(() => {
       if (!this.initialized) {
-        this.showProgressBar = true
+        this.loading = true
 
         console.log('show progress bar')
       }
@@ -200,6 +346,36 @@ export default {
     await Items.init()
 
     this.initialized = true
+    this.loading = false
+
+    if (this.hasFiles) {
+      return
+    }
+
+    const bin = new URL(location).searchParams.get('b')
+
+    if (bin == null) {
+      return
+    }
+
+    this.loading = true
+
+    try {
+      const { record } = await db.read(bin)
+
+      this.setBin(record)
+    } catch (error) {
+      if (error?.response?.status === 403 && error?.response?.message?.indexOf('Requests exhausted') !== -1) {
+        iziToast.error({
+          title: 'Error',
+          message: 'Sorry. The free database is exausted. :(',
+          progressBarColor: 'red',
+          titleColor: 'red'
+        })
+      }
+    }
+
+    this.loading = false
   }
 }
 </script>
@@ -319,6 +495,7 @@ th {
   height: 0.5rem;
   border-radius: 0;
   border: 0;
+  z-index: 1;
 
   .progress-bar {
     background-color: var(--primary-color);
