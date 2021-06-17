@@ -13,3 +13,16 @@ export function bytesToSize(bytes) {
 
   return `${(bytes / 1024 ** i).toFixed(1)} ${sizes[i]}`
 }
+
+export function copyToClipboard(str) {
+  const copyTextarea = document.createElement('textarea')
+
+  copyTextarea.style.position = 'fixed'
+  copyTextarea.style.opacity = '0'
+  copyTextarea.textContent = str
+
+  document.body.appendChild(copyTextarea)
+  copyTextarea.select()
+  document.execCommand('copy')
+  document.body.removeChild(copyTextarea)
+}

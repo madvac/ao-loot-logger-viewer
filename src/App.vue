@@ -16,7 +16,7 @@
       <Filters
         @share="onShare"
         @export="onExport"
-        :disabledShare="sharing || !hasFiles || blockSharing"
+        :disabledShare="sharing || !hasFiles || blockSharing || !validDb"
         :disabledExport="exporting || !hasFiles"
       />
 
@@ -65,7 +65,7 @@
 import { mapGetters, mapMutations, mapState } from 'vuex'
 import iziToast from 'izitoast'
 
-import db from './utils/db'
+import Database from './utils/db'
 import FAQ from './components/FAQ.vue'
 import Filters from './components/Filters.vue'
 import Footer from './components/Footer.vue'
@@ -75,8 +75,11 @@ import Logo from './components/Logo.vue'
 import PlayerLoot from './components/PlayerLoot.vue'
 import regex from './utils/regex'
 import Upload from './components/Upload.vue'
+import { copyToClipboard } from './utils'
 
 let saveAs = null
+
+const db = new Database(process.env.VUE_APP_COLLECTION_ID, process.env.VUE_APP_BIN_KEY)
 
 export default {
   name: 'App',
@@ -95,7 +98,8 @@ export default {
       loading: false,
       sharing: false,
       exporting: false,
-      blockSharing: false
+      blockSharing: false,
+      validDb: db.valid
     }
   },
   computed: {
@@ -272,10 +276,12 @@ export default {
 
         iziToast.success({
           title: 'Success',
-          message: 'Logs loaded from the database.',
+          message: 'URL copied to clipboard.',
           progressBarColor: 'green',
           titleColor: 'green'
         })
+
+        copyToClipboard(location.toString())
       } catch (error) {
         if (error?.response?.status === 403 && error?.response?.message?.indexOf('Requests exhausted') !== -1) {
           this.blockSharing = true
@@ -348,7 +354,7 @@ export default {
     this.initialized = true
     this.loading = false
 
-    if (this.hasFiles) {
+    if (this.hasFiles || !this.validDb) {
       return
     }
 

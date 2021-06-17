@@ -7,7 +7,7 @@ import store from './store'
 Vue.config.productionTip = process.env.NODE_ENV === 'production'
 
 iziToast.settings({
-  timeout: 5000,
+  timeout: 10000,
   progressBar: true,
   transitionIn: 'fadeInUp',
   transitionOut: 'fadeOut',
