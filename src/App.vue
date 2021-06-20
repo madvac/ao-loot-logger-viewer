@@ -65,17 +65,19 @@
 import { mapGetters, mapMutations, mapState } from 'vuex'
 import iziToast from 'izitoast'
 
-import Database from './utils/db'
 import FAQ from './components/FAQ.vue'
 import Filters from './components/Filters.vue'
 import Footer from './components/Footer.vue'
 import GitHubCorner from './components/GitHubCorner.vue'
-import Items from './utils/items'
 import Logo from './components/Logo.vue'
 import PlayerLoot from './components/PlayerLoot.vue'
-import regex from './utils/regex'
 import Upload from './components/Upload.vue'
+
+import Database from './services/database'
+import Items from './services/items'
+
 import { copyToClipboard } from './utils'
+import regex from './utils/regex'
 
 let saveAs = null
 
@@ -104,7 +106,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(['filters', 'lootLogs', 'chestLogs', 'selectedPlayersLogs']),
+    ...mapState(['filters', 'lootLogs', 'chestLogs', 'showPlayers', 'hidePlayers']),
     ...mapGetters(['filteredPlayers', 'hasFiles']),
     sortedFilteredPlayers() {
       return Object.values(this.filteredPlayers)
@@ -123,7 +125,7 @@ export default {
 
           return 0
         })
-        .map((p) => p.name)
+        .map((p) => p.name.toLowerCase())
     },
     showProgressBar() {
       if (this.sharing) {
@@ -229,53 +231,40 @@ export default {
       this.sharing = true
 
       const data = {
-        selectedPlayersLogs: {},
-        lootLogs: {},
-        chestLogs: {}
+        showPlayers: this.showPlayers,
+        hidePlayers: this.hidePlayers,
+        lootLogs: this.lootLogs,
+        chestLogs: this.chestLogs
       }
 
-      for (const file in this.lootLogs) {
-        const logs = []
+      // for (const file in this.lootLogs) {
+      //   const logs = []
 
-        for (const item of this.lootLogs[file]) {
-          logs.push({
-            ...item,
-            lootedAt: item.lootedAt.toISOString()
-          })
-        }
+      //   for (const item of this.lootLogs[file]) {
+      //     logs.push({
+      //       ...item,
+      //       lootedAt: item.lootedAt.toISOString()
+      //     })
+      //   }
 
-        data.lootLogs[file] = logs
-      }
+      //   data.lootLogs[file] = logs
+      // }
 
-      for (const file in this.chestLogs) {
-        const logs = []
+      // for (const file in this.chestLogs) {
+      //   const logs = []
 
-        for (const item of this.chestLogs[file]) {
-          logs.push({
-            ...item,
-            donatedAt: item.donatedAt.toISOString()
-          })
-        }
+      //   for (const item of this.chestLogs[file]) {
+      //     logs.push({
+      //       ...item,
+      //       donatedAt: item.donatedAt.toISOString()
+      //     })
+      //   }
 
-        data.chestLogs[file] = logs
-      }
-
-      for (const file in this.selectedPlayersLogs) {
-        const players = []
-
-        for (const player of this.selectedPlayersLogs[file]) {
-          players.push({
-            ...player
-          })
-        }
-
-        data.selectedPlayersLogs[file] = players
-      }
-
-      let bin
+      //   data.chestLogs[file] = logs
+      // }
 
       try {
-        bin = await db.create(data)
+        const bin = await db.create(data)
 
         window.history.replaceState({}, '', `?b=${bin}`)
 

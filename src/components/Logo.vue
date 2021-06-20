@@ -1,8 +1,6 @@
 <template>
   <div>
-    <a href="/">
-      <img :class="{ small: small }" src="assets/logo.png" alt="Loot Logger Logo" @click="() => $emit('click')" />
-    </a>
+    <img :class="{ small: small }" src="assets/logo.png" alt="Loot Logger Logo" @click="() => $emit('click')" />
   </div>
 </template>
 

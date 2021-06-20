@@ -3,9 +3,9 @@ import Vuex from 'vuex'
 import VuexPersistence from 'vuex-persist'
 
 import deepFreeze from '../utils/deepFreeze'
-import Items from '../utils/items'
+import Items from '../services/items'
 import { strToDate } from '../utils/date'
-import shouldFilterItem from '../utils/should-filter-item'
+import shouldFilterItem from '../services/should-filter-item'
 
 Vue.use(Vuex)
 
@@ -20,7 +20,8 @@ export default new Vuex.Store({
   plugins: [vuexLocal.plugin],
   state: {
     lootLogs: {},
-    selectedPlayersLogs: {},
+    showPlayers: {},
+    hidePlayers: {},
     chestLogs: {},
     filters: {
       t1: false,
@@ -47,7 +48,8 @@ export default new Vuex.Store({
     RESTORE_MUTATION: vuexLocal.RESTORE_MUTATION,
     reset(state) {
       state.lootLogs = {}
-      state.selectedPlayersLogs = {}
+      state.showPlayers = {}
+      state.hidePlayers = {}
       state.chestLogs = {}
 
       window.history.pushState({}, '', '/')
@@ -75,18 +77,14 @@ export default new Vuex.Store({
 
       Vue.set(state.lootLogs, filename, deepFreeze(loot))
     },
-    addSelectedPlayersLogs(state, { filename, matches }) {
-      const selectedPlayers = []
-
+    addSelectedPlayersLogs(state, { matches }) {
       for (const match of matches) {
         const playerName = (match.groups.userName1 || match.groups.userName2).toLowerCase()
 
-        const player = { playerName }
-
-        selectedPlayers.push(player)
+        if (state.showPlayers[playerName] == null) {
+          Vue.set(state.showPlayers, playerName, true)
+        }
       }
-
-      Vue.set(state.selectedPlayersLogs, filename, deepFreeze(selectedPlayers))
     },
     addChestLogs(state, { filename, matches }) {
       const donations = []
@@ -128,8 +126,21 @@ export default new Vuex.Store({
       state.filters[name] = !state.filters[name]
     },
     setBin(state, data) {
-      for (const filename in data.selectedPlayersLogs) {
-        Vue.set(state.selectedPlayersLogs, filename, deepFreeze(data.selectedPlayersLogs[filename]))
+      // for compatibility, since some bins may have this structure
+      if (data.selectedPlayersLogs) {
+        for (const filename in data.selectedPlayersLogs) {
+          for (const playerName in data.selectedPlayersLogs[filename]) {
+            Vue.set(state.showPlayers, playerName.toLowerCase(), true)
+          }
+        }
+      }
+
+      if (data.showPlayers) {
+        Vue.set(state, 'showPlayers', data.showPlayers)
+      }
+
+      if (data.hidePlayers) {
+        Vue.set(state, 'hidePlayers', data.hidePlayers)
       }
 
       for (const filename in data.chestLogs) {
@@ -157,15 +168,18 @@ export default new Vuex.Store({
           )
         )
       }
+    },
+    hidePlayer(state, playerName) {
+      Vue.set(state.hidePlayers, playerName.toLowerCase(), true)
     }
   },
   getters: {
     hasFiles(state) {
       const hasChestLogs = Object.keys(state.chestLogs).length > 0
       const hasLootLogs = Object.keys(state.lootLogs).length > 0
-      const hasPlayerLogs = Object.keys(state.selectedPlayersLogs).length > 0
+      const hasPlayerFilters = Object.keys(state.showPlayers).length > 0
 
-      return hasChestLogs || hasLootLogs || hasPlayerLogs
+      return hasChestLogs || hasLootLogs || hasPlayerFilters
     },
     donatedLoot(state) {
       const donatedLoot = {}
@@ -189,8 +203,8 @@ export default new Vuex.Store({
 
       // PICK UP ITEMS
       for (const loot of getters.filteredLoot) {
-        if (players[loot.lootedBy] == null) {
-          players[loot.lootedBy] = {
+        if (players[loot.lootedBy.toLowerCase()] == null) {
+          players[loot.lootedBy.toLowerCase()] = {
             name: loot.lootedBy,
             amountOfPickedUpItems: 0,
             pickedUpItems: {},
@@ -200,24 +214,24 @@ export default new Vuex.Store({
           }
         }
 
-        if (players[loot.lootedBy].pickedUpItems[loot.itemId] == null) {
-          players[loot.lootedBy].pickedUpItems[loot.itemId] = {
+        if (players[loot.lootedBy.toLowerCase()].pickedUpItems[loot.itemId] == null) {
+          players[loot.lootedBy.toLowerCase()].pickedUpItems[loot.itemId] = {
             id: loot.itemId,
             amount: 0,
             history: []
           }
         }
 
-        players[loot.lootedBy].amountOfPickedUpItems += 1
+        players[loot.lootedBy.toLowerCase()].amountOfPickedUpItems += 1
 
-        players[loot.lootedBy].pickedUpItems[loot.itemId].amount += loot.amount
-        players[loot.lootedBy].pickedUpItems[loot.itemId].history.push(loot)
+        players[loot.lootedBy.toLowerCase()].pickedUpItems[loot.itemId].amount += loot.amount
+        players[loot.lootedBy.toLowerCase()].pickedUpItems[loot.itemId].history.push(loot)
       }
 
       // LOST ITEMS
       for (const loot of getters.filteredLoot) {
-        if (players[loot.lootedFrom] == null) {
-          players[loot.lootedFrom] = {
+        if (players[loot.lootedFrom.toLowerCase()] == null) {
+          players[loot.lootedFrom.toLowerCase()] = {
             name: loot.lootedFrom,
             amountOfPickedUpItems: 0,
             pickedUpItems: {},
@@ -227,7 +241,7 @@ export default new Vuex.Store({
           }
         }
 
-        const player = players[loot.lootedFrom]
+        const player = players[loot.lootedFrom.toLowerCase()]
 
         player.died = true
 
@@ -269,8 +283,8 @@ export default new Vuex.Store({
 
       // DONATED ITEMS
       for (const donation of getters.filteredDonations) {
-        if (players[donation.donatedBy] == null) {
-          players[donation.donatedBy] = {
+        if (players[donation.donatedBy.toLowerCase()] == null) {
+          players[donation.donatedBy.toLowerCase()] = {
             name: donation.donatedBy,
             amountOfPickedUpItems: 0,
             pickedUpItems: {},
@@ -280,7 +294,7 @@ export default new Vuex.Store({
           }
         }
 
-        const player = players[donation.donatedBy]
+        const player = players[donation.donatedBy.toLowerCase()]
 
         // initially, we consider that every item donated is an extra item.
         // As we don't know if the user picked up this item yet.
@@ -336,7 +350,7 @@ export default new Vuex.Store({
       }
 
       for (const playerName in players) {
-        const player = players[playerName]
+        const player = players[playerName.toLowerCase()]
 
         player.amountOfPickedUpItems = 0
 
@@ -365,7 +379,7 @@ export default new Vuex.Store({
 
       // filter players that didn't picked up anything
       for (const playerName in players) {
-        const player = players[playerName]
+        const player = players[playerName.toLowerCase()]
 
         if (player.amountOfPickedUpItems) {
           continue
@@ -384,32 +398,18 @@ export default new Vuex.Store({
 
       return deepFreeze(players)
     },
-    selectedPlayers(state) {
-      if (!Object.keys(state.selectedPlayersLogs).length) {
-        return null
-      }
-
-      const selectedPlayers = {}
-
-      for (const logs of Object.values(state.selectedPlayersLogs)) {
-        for (const item of logs) {
-          selectedPlayers[item.playerName] = true
-        }
-      }
-
-      return selectedPlayers
-    },
     filteredPlayers(state, getters) {
-      if (!getters.selectedPlayers) {
-        return getters.allPlayers
+      const players = {}
+      const shouldSkipFilterPlayers = Object.keys(state.showPlayers).length === 0
+
+      for (const playerName in getters.allPlayers) {
+        if (shouldSkipFilterPlayers || state.showPlayers[playerName.toLowerCase()]) {
+          players[playerName.toLowerCase()] = getters.allPlayers[playerName]
+        }
       }
 
-      const players = {}
-
-      for (const player in getters.allPlayers) {
-        if (getters.selectedPlayers[player.toLowerCase()]) {
-          players[player] = getters.allPlayers[player]
-        }
+      for (const playerName in state.hidePlayers) {
+        delete players[playerName.toLowerCase()]
       }
 
       return players

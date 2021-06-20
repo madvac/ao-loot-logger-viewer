@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import Items from '../utils/items'
+import Items from '../services/items'
 import { dateToStr } from '../utils/date'
 
 export default {
