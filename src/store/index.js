@@ -52,7 +52,7 @@ export default new Vuex.Store({
       state.hidePlayers = {}
       state.chestLogs = {}
 
-      window.history.pushState({}, '', '/')
+      window.history.pushState({}, '', process.env.BASE_URL)
     },
     addLootLogs(state, { filename, matches }) {
       const loot = []

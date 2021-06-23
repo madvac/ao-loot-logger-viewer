@@ -248,36 +248,10 @@ export default {
         chestLogs: this.chestLogs
       }
 
-      // for (const file in this.lootLogs) {
-      //   const logs = []
-
-      //   for (const item of this.lootLogs[file]) {
-      //     logs.push({
-      //       ...item,
-      //       lootedAt: item.lootedAt.toISOString()
-      //     })
-      //   }
-
-      //   data.lootLogs[file] = logs
-      // }
-
-      // for (const file in this.chestLogs) {
-      //   const logs = []
-
-      //   for (const item of this.chestLogs[file]) {
-      //     logs.push({
-      //       ...item,
-      //       donatedAt: item.donatedAt.toISOString()
-      //     })
-      //   }
-
-      //   data.chestLogs[file] = logs
-      // }
-
       try {
         const bin = await db.create(data)
 
-        window.history.replaceState({}, '', `?b=${bin}`)
+        window.history.pushState({}, '', `?b=${bin}`)
 
         iziToast.success({
           title: 'Success',
