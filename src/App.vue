@@ -348,8 +348,6 @@ export default {
     setTimeout(() => {
       if (!this.initialized) {
         this.loadingItems = true
-
-        console.log('show progress bar')
       }
     }, 1500)
 
