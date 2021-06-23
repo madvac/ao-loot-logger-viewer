@@ -125,7 +125,7 @@ export default {
 
           return 0
         })
-        .map((p) => p.name.toLowerCase())
+        .map(p => p.name.toLowerCase())
     },
     showProgressBar() {
       if (this.sharing) {
@@ -163,7 +163,7 @@ export default {
       for (const file of droppedFiles) {
         const reader = new FileReader()
 
-        reader.onload = (evt) => this.processFile(file.name, evt.target.result)
+        reader.onload = evt => this.processFile(file.name, evt.target.result)
 
         reader.readAsText(file, 'UTF-8')
       }
@@ -171,7 +171,18 @@ export default {
     processFile(filename, content) {
       const logs = content.trim()
 
-      let matches = [...logs.matchAll(regex.aoLootLogRe)]
+      let matches = null
+
+      matches = [...logs.matchAll(regex.chestLogSsvRe)]
+
+      if (matches.length) {
+        return this.$store.commit('addChestLogs', {
+          filename,
+          matches
+        })
+      }
+
+      matches = [...logs.matchAll(regex.aoLootLogRe)]
 
       if (matches.length) {
         return this.$store.commit('addLootLogs', {

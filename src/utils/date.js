@@ -1,7 +1,13 @@
 import moment from 'moment'
 
 export function strToDate(str) {
-  const date = moment.utc(str, ['D/M/YYYY k:mm:ss', 'M/D/YYYY k:mm:ss', moment.ISO_8601])
+  const date = moment.utc(str, [
+    'D/M/YYYY k:mm:ss',
+    'M/D/YYYY k:mm:ss',
+    'D.M.YYYY k.mm.ss',
+    'M.D.YYYY k.mm.ss',
+    moment.ISO_8601
+  ])
 
   if (date.format() !== 'Invalid date') {
     return date
