@@ -281,10 +281,26 @@ export default {
 
         copyToClipboard(location.toString())
       } catch (error) {
-        if (error?.response?.status === 403 && error?.response?.message?.indexOf('Requests exhausted') !== -1) {
+        console.error(error)
+
+        if (error?.response?.status === 403 && error?.response?.message?.indexOf('500kb') !== -1) {
           iziToast.error({
             title: 'Error',
-            message: 'Sorry. The free database is exausted. :(',
+            message: 'The payload exceeds the database limit. :(',
+            progressBarColor: 'red',
+            titleColor: 'red'
+          })
+        } else if (error?.response?.status === 403 && error?.response?.message?.indexOf('Requests exhausted') !== -1) {
+          iziToast.error({
+            title: 'Error',
+            message: 'The free database is exausted. :(',
+            progressBarColor: 'red',
+            titleColor: 'red'
+          })
+        } else {
+          iziToast.error({
+            title: 'Error',
+            message: error.message || 'Something went wrong. :(',
             progressBarColor: 'red',
             titleColor: 'red'
           })
@@ -369,10 +385,19 @@ export default {
       this.blockSharing = true
       this.blockUpload = true
     } catch (error) {
+      console.error(error)
+
       if (error?.response?.status === 403 && error?.response?.message?.indexOf('Requests exhausted') !== -1) {
         iziToast.error({
           title: 'Error',
           message: 'Sorry. The free database is exausted. :(',
+          progressBarColor: 'red',
+          titleColor: 'red'
+        })
+      } else {
+        iziToast.error({
+          title: 'Error',
+          message: error.message || 'Something went wrong. :(',
           progressBarColor: 'red',
           titleColor: 'red'
         })
