@@ -107,20 +107,20 @@ export default new Vuex.Store({
 
         const info = Items.getInfoFromName(itemName)
 
-        const tier = info.tier
-        const category = info.category
-        const subcategory = info.subcategory
-
-        let itemId = info.id
-
-        if (itemId == null) {
+        if (info == null) {
           console.error(`item not found: "${itemName}"`)
           continue
         }
 
+        let itemId = info.id
+
         if (itemEnchant > 0 && itemId.indexOf('@') === -1) {
           itemId = `${itemId}@${itemEnchant}`
         }
+
+        const tier = info.tier
+        const category = info.category
+        const subcategory = info.subcategory
 
         if (amount > 0) {
           const log = { donatedAt, donatedBy, itemId, amount, tier, category, subcategory }

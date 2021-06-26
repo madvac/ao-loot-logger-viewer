@@ -1,6 +1,6 @@
 import moment from 'moment'
 
-import items from '../services/items'
+import Items from '../services/items'
 
 export function bytesToSize(bytes) {
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
@@ -39,8 +39,9 @@ export function copyToClipboard(str) {
 }
 
 export function compressData(data) {
-  const after = {
+  const compressed = {
     version: 1,
+    sha: Items.sha,
     showPlayers: Object.keys(data.showPlayers).join(';'),
     hidePlayers: Object.keys(data.hidePlayers).join(';'),
     chestLogs: {},
@@ -71,10 +72,12 @@ export function compressData(data) {
         continue
       }
 
-      logs.push([log.lootedAt.unix(), log.lootedBy, log.itemId, log.amount, log.lootedFrom].join(';'))
+      const info = Items.getInfoFromId(log.itemId)
+
+      logs.push([log.lootedAt.unix(), log.lootedBy, info.index, log.amount, log.lootedFrom].join(';'))
     }
 
-    after.lootLogs[file] = logs
+    compressed.lootLogs[file] = logs
   }
 
   for (const file in data.chestLogs) {
@@ -92,13 +95,15 @@ export function compressData(data) {
         continue
       }
 
-      logs.push([log.donatedAt.unix(), log.donatedBy, log.itemId, log.amount].join(';'))
+      const info = Items.getInfoFromId(log.itemId)
+
+      logs.push([log.donatedAt.unix(), log.donatedBy, info.index, log.amount].join(';'))
     }
 
-    after.chestLogs[file] = logs
+    compressed.chestLogs[file] = logs
   }
 
-  return after
+  return compressed
 }
 
 export function decompressData(data) {
@@ -106,7 +111,7 @@ export function decompressData(data) {
     return data
   }
 
-  const after = {
+  const decompressed = {
     showPlayers: {},
     hidePlayers: {},
     chestLogs: {},
@@ -114,25 +119,25 @@ export function decompressData(data) {
   }
 
   for (const player of data.showPlayers.split(';')) {
-    after.showPlayers[player] = true
+    decompressed.showPlayers[player] = true
   }
 
   for (const player of data.hidePlayers.split(';')) {
-    after.hidePlayers[player] = true
+    decompressed.hidePlayers[player] = true
   }
 
   for (const file in data.lootLogs) {
     const logs = []
 
     for (const log of data.lootLogs[file]) {
-      const [lootedAtUnix, lootedBy, itemId, amount, lootedFrom] = log.split(';')
+      const [lootedAtUnix, lootedBy, itemIndex, amount, lootedFrom] = log.split(';')
 
-      const info = items.getInfoFromId(itemId)
+      const info = Items.getInfoFromIndex(itemIndex)
 
       logs.push({
         lootedAt: moment.unix(lootedAtUnix).toISOString(),
         lootedBy,
-        itemId,
+        itemId: info.id,
         amount: parseInt(amount, 10),
         lootedFrom,
         category: info.category,
@@ -141,21 +146,21 @@ export function decompressData(data) {
       })
     }
 
-    after.lootLogs[file] = logs
+    decompressed.lootLogs[file] = logs
   }
 
   for (const file in data.chestLogs) {
     const logs = []
 
     for (const log of data.chestLogs[file]) {
-      const [donatedAtUnix, donatedBy, itemId, amount] = log.split(';')
+      const [donatedAtUnix, donatedBy, itemIndex, amount] = log.split(';')
 
-      const info = items.getInfoFromId(itemId)
+      const info = Items.getInfoFromIndex(itemIndex)
 
       logs.push({
         donatedAt: moment.unix(donatedAtUnix).toISOString(),
         donatedBy,
-        itemId,
+        itemId: info.id,
         amount: parseInt(amount, 10),
         category: info.category,
         subcategory: info.subcategory,
@@ -163,8 +168,8 @@ export function decompressData(data) {
       })
     }
 
-    after.chestLogs[file] = logs
+    decompressed.chestLogs[file] = logs
   }
 
-  return after
+  return decompressed
 }

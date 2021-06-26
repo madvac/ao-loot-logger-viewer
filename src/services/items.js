@@ -34,15 +34,25 @@ class Items {
     return this.getInfoFromName(this.getNameFromIndex(itemIndex))
   }
 
-  async init() {
-    if (this.isInitialized) {
+  async init(sha = null) {
+    if (sha === this.sha && this.isInitialized) {
       return
     }
 
     this.isInitialized = true
 
-    let response = await axios.get(
-      'https://raw.githubusercontent.com/broderickhyman/ao-bin-dumps/master/formatted/items.json'
+    let response = null
+
+    if (sha) {
+      this.sha = sha
+    } else {
+      response = await axios.get('https://api.github.com/repos/broderickhyman/ao-bin-dumps/commits/master')
+
+      this.sha = response.data.sha
+    }
+
+    response = await axios.get(
+      `https://raw.githubusercontent.com/broderickhyman/ao-bin-dumps/${this.sha}/formatted/items.json`
     )
 
     for (const item of response.data) {
@@ -61,7 +71,7 @@ class Items {
       }
     }
 
-    response = await axios.get('https://raw.githubusercontent.com/broderickhyman/ao-bin-dumps/master/items.json')
+    response = await axios.get(`https://raw.githubusercontent.com/broderickhyman/ao-bin-dumps/${this.sha}/items.json`)
 
     for (const item of response.data.items.mountskin) {
       const id = item['@uniquename']

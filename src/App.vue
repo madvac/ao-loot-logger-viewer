@@ -360,25 +360,25 @@ export default {
       }
     }, 1500)
 
-    await Items.init()
-
     this.initialized = true
     this.loadingItems = false
 
     if (this.hasFiles || !this.validDb) {
-      return
+      return await Items.init()
     }
 
     const bin = new URL(location).searchParams.get('b')
 
     if (bin == null) {
-      return
+      return await Items.init()
     }
 
     this.loadingBin = true
 
     try {
       const { record } = await db.read(bin)
+
+      await Items.init(record.sha)
 
       this.setBin(decompressData(record))
 
