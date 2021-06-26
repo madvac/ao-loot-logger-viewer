@@ -519,15 +519,20 @@ th {
 
 .progress {
   position: fixed;
+  left: -250px;
   bottom: 0;
-  width: 100%;
-  height: 0.5rem;
+  width: calc(100% + 250px);
+  height: 0.8em;
   border-radius: 0;
   border: 0;
   z-index: 1;
 
   .progress-bar {
     background-color: var(--primary-color);
+    animation-name: progress;
+    animation-duration: 800ms;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
 
     &.progress-bar-striped {
       background-image: linear-gradient(
@@ -541,6 +546,16 @@ th {
         transparent
       );
     }
+  }
+}
+
+@keyframes progress {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(48px);
   }
 }
 </style>
