@@ -48,7 +48,7 @@
     </div>
 
     <div class="content file-upload">
-      <Upload @change="drop" :popup="hasFiles" :disabled="!initialized || loadingBin" />
+      <Upload @change="drop" :popup="hasFiles" :disabled="!initialized || loadingBin || blockUpload" />
 
       <a href="#faq" v-if="!hasFiles">Read the FAQ</a>
 
@@ -102,7 +102,8 @@ export default {
       exporting: false,
       blockSharing: false,
       loadingBin: false,
-      validDb: db.valid
+      validDb: db.valid,
+      blockUpload: false
     }
   },
   computed: {
@@ -146,6 +147,10 @@ export default {
   methods: {
     ...mapMutations(['reset', 'setBin']),
     dragover() {
+      if (!this.initialized || this.loadingBin || this.blockUpload) {
+        return
+      }
+
       document.body.classList.add('dragover')
     },
     dragleave() {
@@ -155,7 +160,21 @@ export default {
       document.body.classList.remove('dragover')
 
       if (!this.initialized) {
-        return
+        return iziToast.error({
+          title: 'Error',
+          message: 'The app is still loading. Try again in a few seconds.',
+          progressBarColor: 'red',
+          titleColor: 'red'
+        })
+      }
+
+      if (this.loadingBin || this.blockUpload) {
+        return iziToast.error({
+          title: 'Error',
+          message: 'Upload is blocked.',
+          progressBarColor: 'red',
+          titleColor: 'red'
+        })
       }
 
       const droppedFiles = Array.from(event.dataTransfer ? event.dataTransfer.files : event.target.files)
@@ -348,6 +367,7 @@ export default {
       this.setBin(record)
 
       this.blockSharing = true
+      this.blockUpload = true
     } catch (error) {
       if (error?.response?.status === 403 && error?.response?.message?.indexOf('Requests exhausted') !== -1) {
         iziToast.error({

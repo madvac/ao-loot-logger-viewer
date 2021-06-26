@@ -7,11 +7,11 @@
       name="file-upload"
       accept=".txt,.csv"
       multiple
-      @change="(e) => $emit('change', e)"
+      @change="e => $emit('change', e)"
       :hidden="popup"
       :disabled="disabled"
     />
-    <label for="upload-input" v-if="popup"
+    <label for="upload-input" v-if="popup && !disabled"
       ><svg
         aria-hidden="true"
         focusable="false"
