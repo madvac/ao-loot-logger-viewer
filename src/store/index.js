@@ -9,10 +9,22 @@ import shouldFilterItem from '../services/should-filter-item'
 
 Vue.use(Vuex)
 
+const VERSION = 1
+
 const vuexLocal = new VuexPersistence({
   key: 'ao-loot-logger-viewer',
   storage: window.localStorage,
-  reducer: state => ({ filters: state.filters })
+  reducer: state => ({ VERSION, filters: state.filters }),
+  restoreState: (key, storage) => {
+    const state = JSON.parse(storage[key])
+
+    if (state.VERSION !== VERSION) {
+      return null
+    }
+
+    return state
+  },
+  filter: mutation => (mutation.type = 'toggleFilter')
 })
 
 export default new Vuex.Store({
