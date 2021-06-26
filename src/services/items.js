@@ -4,6 +4,7 @@ class Items {
   constructor() {
     this.idToName = {}
     this.locNameVarToName = {}
+    this.indexToName = {}
     this.nameToInfo = {}
 
     this.isInitialized = false
@@ -11,6 +12,10 @@ class Items {
 
   getNameFromId(itemId) {
     return this.idToName[itemId] || this.locNameVarToName[`@ITEMS_${itemId}`]
+  }
+
+  getNameFromIndex(itemIndex) {
+    return this.indexToName[itemIndex]
   }
 
   getIdFromName(itemName) {
@@ -23,6 +28,10 @@ class Items {
 
   getInfoFromId(itemId) {
     return this.getInfoFromName(this.getNameFromId(itemId))
+  }
+
+  getInfoFromIndex(itemIndex) {
+    return this.getInfoFromName(this.getNameFromIndex(itemIndex))
   }
 
   async init() {
@@ -41,6 +50,7 @@ class Items {
 
       this.idToName[item.UniqueName] = name
       this.locNameVarToName[item.LocalizationNameVariable] = name
+      this.indexToName[item.Index] = name
 
       if (this.nameToInfo[name] == null || item.UniqueName.indexOf('@') === -1) {
         this.nameToInfo[name] = {
