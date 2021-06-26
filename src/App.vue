@@ -76,7 +76,7 @@ import Upload from './components/Upload.vue'
 import Database from './services/database'
 import Items from './services/items'
 
-import { copyToClipboard } from './utils'
+import { copyToClipboard, compressData, decompressData } from './utils'
 import regex from './utils/regex'
 
 let saveAs = null
@@ -260,12 +260,12 @@ export default {
 
       this.sharing = true
 
-      const data = {
+      const data = compressData({
         showPlayers: this.showPlayers,
         hidePlayers: this.hidePlayers,
         lootLogs: this.lootLogs,
         chestLogs: this.chestLogs
-      }
+      })
 
       try {
         const bin = await db.create(data)
@@ -380,7 +380,7 @@ export default {
     try {
       const { record } = await db.read(bin)
 
-      this.setBin(record)
+      this.setBin(decompressData(record))
 
       this.blockSharing = true
       this.blockUpload = true
