@@ -1,15 +1,15 @@
 export default function shouldFilterItem(item, filters) {
   // Hide by tier.
   if (item.tier) {
-    if (item.tier === 1 && !filters.t1) {
+    if (item.tier === 1 && !filters.others) {
       return false
     }
 
-    if (item.tier === 2 && !filters.t2) {
+    if (item.tier === 2 && !filters.others) {
       return false
     }
 
-    if (item.tier === 3 && !filters.t3) {
+    if (item.tier === 3 && !filters.others) {
       return false
     }
 
@@ -69,7 +69,8 @@ export default function shouldFilterItem(item, filters) {
   }
 
   if (!filters.others) {
-    if (item.category === 'other') {
+    // let trash be handle by another filter
+    if (item.category === 'other' && item.subcategory !== 'trash') {
       return false
     }
 

@@ -24,9 +24,6 @@ export default new Vuex.Store({
     hidePlayers: {},
     chestLogs: {},
     filters: {
-      t1: false,
-      t2: false,
-      t3: false,
       t4: true,
       t5: true,
       t6: true,
@@ -34,12 +31,12 @@ export default new Vuex.Store({
       t8: true,
       bag: false,
       cape: false,
-      lost: false,
+      lost: true,
       donated: false,
       food: false,
       mount: false,
       others: false,
-      resolved: false,
+      resolved: true,
       potion: false,
       trash: false
     }
@@ -114,7 +111,7 @@ export default new Vuex.Store({
         }
 
         if (amount > 0) {
-          const log = { donatedAt, donatedBy, itemId, itemEnchant, amount, tier, category, subcategory }
+          const log = { donatedAt, donatedBy, itemId, amount, tier, category, subcategory }
 
           donations.push(log)
         }
