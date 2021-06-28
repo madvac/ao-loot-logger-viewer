@@ -27,8 +27,8 @@
         :type="item.type"
         :amount="item.amount"
         :history="item.history"
-        :subcategory="item.subcategory"
-        :category="item.category"
+        :subcategory="item.history[0].subcategory"
+        :category="item.history[0].category"
       />
     </transition-group>
   </tr>
