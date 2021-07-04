@@ -16,7 +16,13 @@ const vuexLocal = new VuexPersistence({
   storage: window.localStorage,
   reducer: state => ({ VERSION, filters: state.filters }),
   restoreState: (key, storage) => {
-    const state = JSON.parse(storage[key])
+    let state
+
+    try {
+      state = JSON.parse(storage[key])
+    } catch {
+      return null
+    }
 
     if (state.VERSION !== VERSION) {
       return null
