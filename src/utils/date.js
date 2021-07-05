@@ -9,8 +9,14 @@ export function strToDate(str) {
     moment.ISO_8601
   ])
 
-  if (date.format() !== 'Invalid date') {
+  if (date.isValid()) {
     return date
+  }
+
+  const fallback = moment.utc(str)
+
+  if (fallback.isValid()) {
+    return fallback
   }
 
   console.error('Date format not recognized', str)
