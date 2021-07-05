@@ -37,10 +37,11 @@ export default new Vuex.Store({
   strict: true,
   plugins: [vuexLocal.plugin],
   state: {
-    lootLogs: {},
     showPlayers: {},
     hidePlayers: {},
-    chestLogs: {},
+    files: {},
+    lootLogs: [],
+    chestLogs: [],
     filters: {
       t4: true,
       t5: true,
@@ -62,83 +63,127 @@ export default new Vuex.Store({
   mutations: {
     RESTORE_MUTATION: vuexLocal.RESTORE_MUTATION,
     reset(state) {
-      state.lootLogs = {}
       state.showPlayers = {}
       state.hidePlayers = {}
-      state.chestLogs = {}
+      state.files = {}
+      state.chestLogs = []
+      state.lootLogs = []
 
       window.history.pushState({}, '', process.env.BASE_URL)
     },
-    addLootLogs(state, { filename, matches }) {
-      const loot = []
+    uploadedFiles(state, { uploadedFiles }) {
+      console.time('uploadedFiles')
 
-      for (const match of matches) {
-        const lootedAt = strToDate(match.groups.lootedAt)
-        const lootedBy = match.groups.lootedBy
-        const itemId = match.groups.itemId
-        const amount = parseInt(match.groups.amount, 10)
-        const lootedFrom = match.groups.lootedFrom
-
-        const info = Items.getInfoFromId(itemId)
-
-        const tier = info.tier
-        const category = info.category
-        const subcategory = info.subcategory
-
-        const log = { lootedAt, lootedBy, itemId, amount, lootedFrom, tier, category, subcategory }
-
-        loot.push(log)
+      const files = {
+        ...state.files
       }
 
-      Vue.set(state.lootLogs, filename, deepFreeze(loot))
-    },
-    addSelectedPlayersLogs(state, { matches }) {
-      for (const match of matches) {
-        const playerName = (match.groups.userName1 || match.groups.userName2).toLowerCase()
-
-        if (state.showPlayers[playerName] == null) {
-          Vue.set(state.showPlayers, playerName, true)
-        }
+      const showPlayers = {
+        ...state.showPlayers
       }
-    },
-    addChestLogs(state, { filename, matches }) {
-      const donations = []
 
-      for (const match of matches) {
-        const donatedAt = strToDate(match.groups.donatedAt)
-        const donatedBy = match.groups.donatedBy
-        const itemName = match.groups.itemName
-        const itemEnchant = parseInt(match.groups.itemEnchant, 10)
-        const amount = parseInt(match.groups.amount, 10)
-
-        const info = Items.getInfoFromName(itemName)
-
-        if (info == null) {
-          console.error(`item not found: "${itemName}"`)
+      for (const file of uploadedFiles.filter(e => e.type === 'show-players')) {
+        if (files[file.filename]) {
           continue
         }
 
-        let itemId = info.id
+        files[file.filename] = true
 
-        if (itemEnchant > 0 && itemId.indexOf('@') === -1) {
-          itemId = `${itemId}@${itemEnchant}`
-        }
+        for (const match of file.matches) {
+          const playerName = (match.groups.userName1 || match.groups.userName2).toLowerCase()
 
-        const tier = info.tier
-        const category = info.category
-        const subcategory = info.subcategory
-
-        if (amount > 0) {
-          const log = { donatedAt, donatedBy, itemId, amount, tier, category, subcategory }
-
-          donations.push(log)
+          showPlayers[playerName] = true
         }
       }
 
-      Vue.set(state.chestLogs, filename, deepFreeze(donations))
+      const lootLogs = [...state.lootLogs]
+
+      for (const file of uploadedFiles.filter(e => e.type === 'loot-logs')) {
+        if (files[file.filename]) {
+          continue
+        }
+
+        files[file.filename] = true
+
+        for (const match of file.matches) {
+          const lootedAt = strToDate(match.groups.lootedAt)
+          const lootedBy = match.groups.lootedBy
+          const itemId = match.groups.itemId
+          const amount = parseInt(match.groups.amount, 10)
+          const lootedFrom = match.groups.lootedFrom
+
+          const info = Items.getInfoFromId(itemId)
+
+          const itemName = info.name
+          const tier = info.tier
+          const category = info.category
+          const subcategory = info.subcategory
+
+          const log = { lootedAt, lootedBy, lootedFrom, itemId, itemName, amount, tier, category, subcategory }
+
+          lootLogs.push(log)
+        }
+      }
+
+      lootLogs.sort((l1, l2) => l1.lootedAt - l2.lootedAt)
+
+      const chestLogs = [...state.chestLogs]
+
+      for (const file of uploadedFiles.filter(e => e.type === 'chest-logs')) {
+        if (files[file.filename]) {
+          continue
+        }
+
+        files[file.filename] = true
+
+        for (const match of file.matches) {
+          const amount = parseInt(match.groups.amount, 10)
+
+          if (amount < 0) {
+            continue
+          }
+
+          const donatedAt = strToDate(match.groups.donatedAt)
+          const donatedBy = match.groups.donatedBy
+          const itemName = match.groups.itemName
+          const itemEnchant = parseInt(match.groups.itemEnchant, 10)
+
+          const info = Items.getInfoFromName(itemName)
+
+          if (info == null) {
+            console.error(`item not found: "${itemName}"`)
+            continue
+          }
+
+          let itemId = info.id
+
+          if (itemEnchant > 0 && itemId.indexOf('@') === -1) {
+            itemId = `${itemId}@${itemEnchant}`
+          }
+
+          const tier = info.tier
+          const category = info.category
+          const subcategory = info.subcategory
+
+          const log = { donatedAt, donatedBy, itemId, itemName, amount, tier, category, subcategory }
+
+          chestLogs.push(log)
+        }
+      }
+
+      chestLogs.sort((l1, l2) => l1.donatedAt - l2.donatedAt)
+
+      state.showPlayers = deepFreeze(showPlayers)
+      state.files = deepFreeze(files)
+      state.lootLogs = deepFreeze(lootLogs)
+      state.chestLogs = deepFreeze(chestLogs)
+
+      console.timeEnd('uploadedFiles')
     },
     toggleFilter(state, name) {
-      state.filters[name] = !state.filters[name]
+      if (state.filters[name] != null) {
+        Vue.set(state.filters, name, !state.filters[name])
+      }
     },
     setBin(state, data) {
       // for compatibility, since some bins may have this structure
@@ -190,30 +235,11 @@ export default new Vuex.Store({
   },
   getters: {
     hasFiles(state) {
-      const hasChestLogs = Object.keys(state.chestLogs).length > 0
-      const hasLootLogs = Object.keys(state.lootLogs).length > 0
-      const hasPlayerFilters = Object.keys(state.showPlayers).length > 0
-
-      return hasChestLogs || hasLootLogs || hasPlayerFilters
-    },
-    donatedLoot(state) {
-      const donatedLoot = {}
-
-      for (const logs of Object.values(state.chestLogs)) {
-        for (const line of logs) {
-          const key = `${line.donatedBy} ${line.donatedAt} ${line.itemId} ${line.amount}`
-
-          donatedLoot[key] = line
-        }
-      }
-
-      const loot = Object.values(donatedLoot)
-
-      loot.sort((a, b) => a.donatedAt - b.donatedAt)
-
-      return deepFreeze(loot)
+      return Object.keys(state.files).length > 0
     },
     allPlayers(state, getters) {
+      console.time('allPlayers')
+
       const players = {}
 
       // PICK UP ITEMS
@@ -411,94 +437,97 @@ export default new Vuex.Store({
         delete players[playerName]
       }
 
-      return deepFreeze(players)
+      const allPlayersFrozen = deepFreeze(players)
+
+      console.timeEnd('allPlayers')
+
+      return allPlayersFrozen
     },
     filteredPlayers(state, getters) {
+      console.time('filteredPlayers')
+
       const players = {}
-      const shouldSkipFilterPlayers = Object.keys(state.showPlayers).length === 0
+      const hasShowPlayers = Object.keys(state.showPlayers).length > 0
 
       for (const playerName in getters.allPlayers) {
-        if (shouldSkipFilterPlayers || state.showPlayers[playerName.toLowerCase()]) {
-          players[playerName.toLowerCase()] = getters.allPlayers[playerName]
+        const lowerPlayerName = playerName.toLowerCase()
+
+        if (state.hidePlayers[lowerPlayerName]) {
+          continue
         }
+
+        if (hasShowPlayers && !state.showPlayers[lowerPlayerName]) {
+          continue
+        }
+
+        players[lowerPlayerName] = getters.allPlayers[playerName]
       }
 
-      for (const playerName in state.hidePlayers) {
-        delete players[playerName.toLowerCase()]
-      }
+      console.timeEnd('filteredPlayers')
 
       return players
     },
-    allLoot(state) {
-      const loot = []
+    uniqueLootLogs(state) {
+      console.time('uniqueLootLogs')
 
-      for (const logs of Object.values(state.lootLogs)) {
-        for (const log of logs) {
-          const isDuplicate = loot.some(e => {
-            // if the player looted different players, it is definetly not a duplicate.
-            if (e.itemId !== log.itemId) {
-              return false
-            }
+      const uniqueLootLogs = []
+      const searchIndex = {}
 
-            if (e.lootedFrom !== log.lootedFrom) {
-              return false
-            }
+      for (const log of state.lootLogs) {
+        if (searchIndex[log.lootedBy] == null) {
+          searchIndex[log.lootedBy] = {}
+        }
 
-            if (e.lootedBy !== log.lootedBy) {
-              return false
-            }
+        if (searchIndex[log.lootedBy][log.lootedFrom] == null) {
+          searchIndex[log.lootedBy][log.lootedFrom] = {}
+        }
 
-            if (e.amount !== log.amount) {
-              return false
-            }
+        if (searchIndex[log.lootedBy][log.lootedFrom][log.itemId] == null) {
+          searchIndex[log.lootedBy][log.lootedFrom][log.itemId] = {}
+        }
 
-            const diff = Math.abs(e.lootedAt.diff(log.lootedAt))
+        if (searchIndex[log.lootedBy][log.lootedFrom][log.itemId][log.amount] == null) {
+          searchIndex[log.lootedBy][log.lootedFrom][log.itemId][log.amount] = []
+        }
 
-            // if looted from the same player, in a very short time window, it is
-            // probably a duplicate
-            return diff <= 120000
-          })
+        const isDuplicate = searchIndex[log.lootedBy][log.lootedFrom][log.itemId][log.amount].some(
+          date => Math.abs(date.diff(log.lootedAt)) <= 120000
+        )
 
-          if (!isDuplicate) {
-            loot.push(log)
-          }
+        if (!isDuplicate) {
+          searchIndex[log.lootedBy][log.lootedFrom][log.itemId][log.amount].push(log.lootedAt)
+
+          uniqueLootLogs.push(log)
         }
       }
 
-      loot.sort((a, b) => a.lootedAt - b.lootedAt)
+      const uniqueLootLogsFrozen = deepFreeze(uniqueLootLogs)
 
-      return deepFreeze(loot)
+      console.timeEnd('uniqueLootLogs')
+
+      return uniqueLootLogsFrozen
     },
     filteredLoot(state, getters) {
-      const filteredLoot = getters.allLoot.filter(loot => shouldFilterItem(loot, state.filters))
+      console.time('filteredLoot')
 
-      return deepFreeze(filteredLoot)
+      const filteredLoot = getters.uniqueLootLogs.filter(loot => shouldFilterItem(loot, state.filters))
+
+      const filteredLootFrozen = deepFreeze(filteredLoot)
+
+      console.timeEnd('filteredLoot')
+
+      return filteredLootFrozen
     },
-    filteredDonations(state, getters) {
-      const filteredDonations = getters.donatedLoot.filter(loot => shouldFilterItem(loot, state.filters))
+    filteredDonations(state) {
+      console.time('filteredDonations')
 
-      return deepFreeze(filteredDonations)
-    },
-    donationsByPlayer(state, getters) {
-      const donationsByPlayer = {}
+      const filteredDonations = state.chestLogs.filter(loot => shouldFilterItem(loot, state.filters))
 
-      for (const donation of getters.donatedLoot) {
-        if (donationsByPlayer[donation.donatedBy] == null) {
-          donationsByPlayer[donation.donatedBy] = {}
-        }
+      const filteredDonationsFrozen = deepFreeze(filteredDonations)
 
-        if (donationsByPlayer[donation.donatedBy][donation.itemId] == null) {
-          donationsByPlayer[donation.donatedBy][donation.itemId] = {
-            amount: 0,
-            history: []
-          }
-        }
+      console.timeEnd('filteredDonations')
 
-        donationsByPlayer[donation.donatedBy][donation.itemId].amount += donation.amount
-        donationsByPlayer[donation.donatedBy][donation.itemId].history.push(donation)
-      }
-
-      return deepFreeze(donationsByPlayer)
+      return filteredDonationsFrozen
     }
   }
 })

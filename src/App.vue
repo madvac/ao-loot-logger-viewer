@@ -156,7 +156,7 @@ export default {
     dragleave() {
       document.body.classList.remove('dragover')
     },
-    drop(event) {
+    async drop(event) {
       document.body.classList.remove('dragover')
 
       if (!this.initialized) {
@@ -179,79 +179,53 @@ export default {
 
       const droppedFiles = Array.from(event.dataTransfer ? event.dataTransfer.files : event.target.files)
 
-      for (const file of droppedFiles) {
-        const reader = new FileReader()
+      const promises = droppedFiles.map(file => {
+        return new Promise(resolve => {
+          const reader = new FileReader()
 
-        reader.onload = evt => this.processFile(file.name, evt.target.result)
+          reader.onload = evt => resolve({ filename: file.name, content: evt.target.result })
 
-        reader.readAsText(file, 'UTF-8')
-      }
+          reader.readAsText(file, 'UTF-8')
+        })
+      })
+
+      const files = await Promise.all(promises)
+
+      const matches = files.map(file => this.getMatchesFromFile(file)).filter(matches => matches != null)
+
+      this.processMatches(matches)
     },
-    processFile(filename, content) {
-      const logs = content.trim()
+    processMatches(uploadedFiles) {
+      this.$store.commit('uploadedFiles', { uploadedFiles })
+    },
+    getMatchesFromFile(file) {
+      const patterns = [
+        { re: regex.chestLogSsvRe, type: 'chest-logs' },
+        { re: regex.aoLootLogRe, type: 'loot-logs' },
+        { re: regex.lootLogRe, type: 'loot-logs' },
+        { re: regex.chestLogRe, type: 'chest-logs' },
+        { re: regex.chestLogCsvRe, type: 'chest-logs' },
+        { re: regex.guildMemberLogRe, type: 'show-players' }
+      ]
 
-      let matches = null
+      const content = file.content.trim()
 
-      matches = [...logs.matchAll(regex.chestLogSsvRe)]
+      for (const pattern of patterns) {
+        const matches = [...content.matchAll(pattern.re)]
 
-      if (matches.length) {
-        return this.$store.commit('addChestLogs', {
-          filename,
-          matches
-        })
+        if (matches.length) {
+          return { matches, filename: file.filename, type: pattern.type }
+        }
       }
 
-      matches = [...logs.matchAll(regex.aoLootLogRe)]
-
-      if (matches.length) {
-        return this.$store.commit('addLootLogs', {
-          filename,
-          matches
-        })
-      }
-
-      matches = [...logs.matchAll(regex.lootLogRe)]
-
-      if (matches.length) {
-        return this.$store.commit('addLootLogs', {
-          filename,
-          matches
-        })
-      }
-
-      matches = [...logs.matchAll(regex.chestLogRe)]
-
-      if (matches.length) {
-        return this.$store.commit('addChestLogs', {
-          filename,
-          matches
-        })
-      }
-
-      matches = [...logs.matchAll(regex.chestLogCsvRe)]
-
-      if (matches.length) {
-        return this.$store.commit('addChestLogs', {
-          filename,
-          matches
-        })
-      }
-
-      matches = [...logs.matchAll(regex.guildMemberLogRe)]
-
-      if (matches.length) {
-        return this.$store.commit('addSelectedPlayersLogs', {
-          filename,
-          matches
-        })
-      }
-
-      return iziToast.error({
+      iziToast.error({
         title: 'Error',
-        message: `No matches from this file.`,
+        message: `No matches for ${file.filename}`,
         progressBarColor: 'red',
         titleColor: 'red'
       })
+
+      return null
     },
     async onShare() {
       if (this.sharing) {
