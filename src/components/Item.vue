@@ -5,6 +5,7 @@
       donated: type === 'donation',
       lost: type === 'lost',
       resolved: type === 'resolved',
+      loaded: loaded,
       gold: isGold
     }"
   >
@@ -19,6 +20,11 @@ import { dateToStr } from '../utils/date'
 
 export default {
   name: 'Item',
+  data() {
+    return {
+      loaded: false
+    }
+  },
   props: {
     id: {
       type: String,
@@ -74,6 +80,8 @@ export default {
   methods: {
     onLoad(evt) {
       evt.target.parentElement.classList.add('loaded')
+
+      this.loaded = true
     }
   }
 }

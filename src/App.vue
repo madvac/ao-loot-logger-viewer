@@ -107,7 +107,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(['filters', 'lootLogs', 'chestLogs', 'showPlayers', 'hidePlayers']),
+    ...mapState(['files', 'filters', 'lootLogs', 'chestLogs', 'showPlayers', 'hidePlayers']),
     ...mapGetters(['filteredPlayers', 'hasFiles']),
     sortedFilteredPlayers() {
       return Object.values(this.filteredPlayers)
@@ -235,6 +235,8 @@ export default {
       this.sharing = true
 
       const data = compressData({
+        filters: this.filters,
+        files: this.files,
         showPlayers: this.showPlayers,
         hidePlayers: this.hidePlayers,
         lootLogs: this.lootLogs,

@@ -9,26 +9,52 @@ import shouldFilterItem from '../services/should-filter-item'
 
 Vue.use(Vuex)
 
-const VERSION = 1
+const FILTERS = {
+  t4: true,
+  t5: true,
+  t6: true,
+  t7: true,
+  t8: true,
+  bag: false,
+  cape: false,
+  lost: true,
+  donated: false,
+  food: false,
+  mount: false,
+  others: false,
+  resolved: true,
+  potion: false,
+  trash: false
+}
 
 const vuexLocal = new VuexPersistence({
   key: 'ao-loot-logger-viewer',
   storage: window.localStorage,
-  reducer: state => ({ VERSION, filters: state.filters }),
+  reducer: state => {
+    const filters = { ...FILTERS }
+
+    for (const filter in FILTERS) {
+      filters[filter] = !!state.filters[filter]
+    }
+
+    return { filters }
+  },
   restoreState: (key, storage) => {
-    let state
+    let storedState
 
     try {
-      state = JSON.parse(storage[key])
+      storedState = JSON.parse(storage[key])
     } catch {
       return null
     }
 
-    if (state.VERSION !== VERSION) {
-      return null
+    const filters = { ...FILTERS }
+
+    for (const filter in FILTERS) {
+      filters[filter] = !!storedState.filters[filter]
     }
 
-    return state
+    return { filters }
   },
   filter: mutation => (mutation.type = 'toggleFilter')
 })
@@ -43,21 +69,7 @@ export default new Vuex.Store({
     lootLogs: [],
     chestLogs: [],
     filters: {
-      t4: true,
-      t5: true,
-      t6: true,
-      t7: true,
-      t8: true,
-      bag: false,
-      cape: false,
-      lost: true,
-      donated: false,
-      food: false,
-      mount: false,
-      others: false,
-      resolved: true,
-      potion: false,
-      trash: false
+      ...FILTERS
     }
   },
   mutations: {
@@ -195,6 +207,16 @@ export default new Vuex.Store({
         }
       }
 
+      if (data.filters) {
+        for (const filter in state.filters) {
+          Vue.set(state.filters, filter, !!data.filters[filter])
+        }
+      }
+
+      if (data.files) {
+        Vue.set(state, 'files', data.files)
+      }
+
       if (data.showPlayers) {
         Vue.set(state, 'showPlayers', data.showPlayers)
       }
@@ -203,31 +225,8 @@ export default new Vuex.Store({
         Vue.set(state, 'hidePlayers', data.hidePlayers)
       }
 
-      for (const filename in data.chestLogs) {
-        Vue.set(
-          state.chestLogs,
-          filename,
-          deepFreeze(
-            data.chestLogs[filename].map(log => ({
-              ...log,
-              donatedAt: strToDate(log.donatedAt)
-            }))
-          )
-        )
-      }
-
-      for (const filename in data.lootLogs) {
-        Vue.set(
-          state.lootLogs,
-          filename,
-          deepFreeze(
-            data.lootLogs[filename].map(log => ({
-              ...log,
-              lootedAt: strToDate(log.lootedAt)
-            }))
-          )
-        )
-      }
+      Vue.set(state, 'lootLogs', deepFreeze(data.lootLogs))
+      Vue.set(state, 'chestLogs', deepFreeze(data.chestLogs))
     },
     hidePlayer(state, playerName) {
       Vue.set(state.hidePlayers, playerName.toLowerCase(), true)

@@ -40,67 +40,59 @@ export function copyToClipboard(str) {
 
 export function compressData(data) {
   const compressed = {
-    version: 1,
+    version: 2,
     sha: Items.sha,
+    filters: Object.keys(data.filters)
+      .filter(key => data.filters[key])
+      .join(';'),
+    files: Object.keys(data.files).join(';'),
     showPlayers: Object.keys(data.showPlayers).join(';'),
     hidePlayers: Object.keys(data.hidePlayers).join(';'),
-    chestLogs: {},
-    lootLogs: {}
+    chestLogs: [],
+    lootLogs: []
   }
 
-  for (const file in data.lootLogs) {
-    const logs = []
-
-    for (const log of data.lootLogs[file]) {
-      // exclude trash from logs
-      if (log.itemId.indexOf('TRASH') !== -1) {
-        continue
-      }
-
-      // if we're filtering players (the user uploaded a player list)
-      // we only export the log if it's looted by or looted from a player in the show list
-      if (
-        Object.keys(data.showPlayers).length &&
-        !data.showPlayers[log.lootedBy.toLowerCase()] &&
-        !data.showPlayers[log.lootedFrom.toLowerCase()]
-      ) {
-        continue
-      }
-
-      // if both players are hidden, we can ignore this log
-      if (data.hidePlayers[log.lootedBy.toLowerCase()] && data.hidePlayers[log.lootedFrom.toLowerCase()]) {
-        continue
-      }
-
-      const info = Items.getInfoFromId(log.itemId)
-
-      logs.push([log.lootedAt.unix(), log.lootedBy, info.index, log.amount, log.lootedFrom].join(';'))
+  for (const log of data.lootLogs) {
+    // exclude trash from logs
+    if (log.itemId.indexOf('TRASH') !== -1) {
+      continue
     }
 
-    compressed.lootLogs[file] = logs
+    // if we're filtering players (the user uploaded a player list)
+    // we only export the log if it's looted by or looted from a player in the show list
+    if (
+      Object.keys(data.showPlayers).length &&
+      !data.showPlayers[log.lootedBy.toLowerCase()] &&
+      !data.showPlayers[log.lootedFrom.toLowerCase()]
+    ) {
+      continue
+    }
+
+    // if both players are hidden, we can ignore this log
+    if (data.hidePlayers[log.lootedBy.toLowerCase()] && data.hidePlayers[log.lootedFrom.toLowerCase()]) {
+      continue
+    }
+
+    const info = Items.getInfoFromId(log.itemId)
+
+    compressed.lootLogs.push([log.lootedAt.unix(), log.lootedBy, info.index, log.amount, log.lootedFrom].join(';'))
   }
 
-  for (const file in data.chestLogs) {
-    const logs = []
-
-    for (const log of data.chestLogs[file]) {
-      // if we're filtering players (the user uploaded a player list)
-      // we only export the log if it's donated by a player in the show list
-      if (Object.keys(data.showPlayers).length && !data.showPlayers[log.donatedBy.toLowerCase()]) {
-        continue
-      }
-
-      // if the player is hidden, we can ignore the donation
-      if (data.hidePlayers[log.donatedBy.toLowerCase()]) {
-        continue
-      }
-
-      const info = Items.getInfoFromId(log.itemId)
-
-      logs.push([log.donatedAt.unix(), log.donatedBy, info.index, log.amount].join(';'))
+  for (const log of data.chestLogs) {
+    // if we're filtering players (the user uploaded a player list)
+    // we only export the log if it's donated by a player in the show list
+    if (Object.keys(data.showPlayers).length && !data.showPlayers[log.donatedBy.toLowerCase()]) {
+      continue
     }
 
-    compressed.chestLogs[file] = logs
+    // if the player is hidden, we can ignore the donation
+    if (data.hidePlayers[log.donatedBy.toLowerCase()]) {
+      continue
+    }
+
+    const info = Items.getInfoFromId(log.itemId)
+
+    compressed.chestLogs.push([log.donatedAt.unix(), log.donatedBy, info.index, log.amount].join(';'))
   }
 
   return compressed
@@ -112,10 +104,33 @@ export function decompressData(data) {
   }
 
   const decompressed = {
+    files: {},
     showPlayers: {},
     hidePlayers: {},
-    chestLogs: {},
-    lootLogs: {}
+    chestLogs: [],
+    lootLogs: []
+  }
+
+  if (data.filters != null) {
+    decompressed.filters = {}
+
+    for (const filter of data.filters.split(';')) {
+      decompressed.filters[filter] = true
+    }
+  }
+
+  if (data.version === 1) {
+    for (const file in data.lootLogs) {
+      decompressed.files[file] = true
+    }
+
+    for (const file in data.chestLogs) {
+      decompressed.files[file] = true
+    }
+  } else {
+    for (const file of data.files.split(';')) {
+      decompressed.files[file] = true
+    }
   }
 
   for (const player of data.showPlayers.split(';')) {
@@ -126,16 +141,32 @@ export function decompressData(data) {
     decompressed.hidePlayers[player] = true
   }
 
-  for (const file in data.lootLogs) {
-    const logs = []
+  if (data.version === 1) {
+    decompressed.lootLogs = decompressLootLogsDatav1(data.lootLogs)
+  } else {
+    decompressed.lootLogs = decompressLootLogsDatav2(data.lootLogs)
+  }
 
-    for (const log of data.lootLogs[file]) {
+  if (data.version === 1) {
+    decompressed.chestLogs = decompressChestLogsDatav1(data.chestLogs)
+  } else {
+    decompressed.chestLogs = decompressChestLogsDatav2(data.chestLogs)
+  }
+
+  return decompressed
+}
+
+function decompressLootLogsDatav1(lootLogs) {
+  const decompressedLootLogs = []
+
+  for (const file in lootLogs) {
+    for (const log of lootLogs[file]) {
       const [lootedAtUnix, lootedBy, itemIndex, amount, lootedFrom] = log.split(';')
 
       const info = Items.getInfoFromIndex(itemIndex)
 
-      logs.push({
-        lootedAt: moment.unix(lootedAtUnix).toISOString(),
+      decompressedLootLogs.push({
+        lootedAt: moment.unix(lootedAtUnix),
         lootedBy,
         itemId: info.id,
         amount: parseInt(amount, 10),
@@ -145,20 +176,45 @@ export function decompressData(data) {
         tier: info.tier
       })
     }
-
-    decompressed.lootLogs[file] = logs
   }
 
-  for (const file in data.chestLogs) {
-    const logs = []
+  return decompressedLootLogs
+}
 
-    for (const log of data.chestLogs[file]) {
+function decompressLootLogsDatav2(lootLogs) {
+  const decompressedLootLogs = []
+
+  for (const log of lootLogs) {
+    const [lootedAtUnix, lootedBy, itemIndex, amount, lootedFrom] = log.split(';')
+
+    const info = Items.getInfoFromIndex(itemIndex)
+
+    decompressedLootLogs.push({
+      lootedAt: moment.unix(lootedAtUnix),
+      lootedBy,
+      itemId: info.id,
+      amount: parseInt(amount, 10),
+      lootedFrom,
+      category: info.category,
+      subcategory: info.subcategory,
+      tier: info.tier
+    })
+  }
+
+  return decompressedLootLogs
+}
+
+function decompressChestLogsDatav1(chestLogs) {
+  const decompressedChestLogs = []
+
+  for (const file in chestLogs) {
+    for (const log of chestLogs[file]) {
       const [donatedAtUnix, donatedBy, itemIndex, amount] = log.split(';')
 
       const info = Items.getInfoFromIndex(itemIndex)
 
-      logs.push({
-        donatedAt: moment.unix(donatedAtUnix).toISOString(),
+      decompressedChestLogs.push({
+        donatedAt: moment.unix(donatedAtUnix),
         donatedBy,
         itemId: info.id,
         amount: parseInt(amount, 10),
@@ -167,9 +223,29 @@ export function decompressData(data) {
         tier: info.tier
       })
     }
-
-    decompressed.chestLogs[file] = logs
   }
 
-  return decompressed
+  return decompressedChestLogs
+}
+
+function decompressChestLogsDatav2(chestLogs) {
+  const decompressedChestLogs = []
+
+  for (const log of chestLogs) {
+    const [donatedAtUnix, donatedBy, itemIndex, amount] = log.split(';')
+
+    const info = Items.getInfoFromIndex(itemIndex)
+
+    decompressedChestLogs.push({
+      donatedAt: moment.unix(donatedAtUnix),
+      donatedBy,
+      itemId: info.id,
+      amount: parseInt(amount, 10),
+      category: info.category,
+      subcategory: info.subcategory,
+      tier: info.tier
+    })
+  }
+
+  return decompressedChestLogs
 }
