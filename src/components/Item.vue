@@ -5,7 +5,6 @@
       donated: type === 'donation',
       lost: type === 'lost',
       resolved: type === 'resolved',
-      loaded: loaded,
       gold: isGold
     }"
   >
@@ -20,11 +19,6 @@ import { dateToStr } from '../utils/date'
 
 export default {
   name: 'Item',
-  data() {
-    return {
-      loaded: false
-    }
-  },
   props: {
     id: {
       type: String,
@@ -65,21 +59,21 @@ export default {
       let strs = []
 
       if (this.type === 'donation') {
-        strs = this.history.map((e) => `${e.amount}x donated on ${dateToStr(e.donatedAt)}`)
+        strs = this.history.map(e => `${e.amount}x donated on ${dateToStr(e.donatedAt)}`)
       } else if (this.type === 'lost') {
-        strs = this.history.map((e) => `${e.amount}x lost to ${e.lootedBy} at ${dateToStr(e.lootedAt)}`)
+        strs = this.history.map(e => `${e.amount}x lost to ${e.lootedBy} at ${dateToStr(e.lootedAt)}`)
       } else if (this.type === 'resolved') {
-        strs = this.history.map((e) => `${e.amount}x ${e.str} on ${dateToStr(e.at)}`)
+        strs = this.history.map(e => `${e.amount}x ${e.str} on ${dateToStr(e.at)}`)
       } else {
-        strs = this.history.map((e) => `${e.amount}x looted from ${e.lootedFrom} on ${dateToStr(e.lootedAt)}`)
+        strs = this.history.map(e => `${e.amount}x looted from ${e.lootedFrom} on ${dateToStr(e.lootedAt)}`)
       }
 
       return [`${Items.getNameFromId(this.id)} - ${this.id}`, '', ...strs].join('\n')
     }
   },
   methods: {
-    onLoad() {
-      this.loaded = true
+    onLoad(evt) {
+      evt.target.parentElement.classList.add('loaded')
     }
   }
 }
