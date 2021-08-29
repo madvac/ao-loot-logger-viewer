@@ -2,7 +2,7 @@
   <tr>
     <td class="player-name" :class="{ died: died }">
       <div :title="died ? `${name} died.` : ''">
-        {{ name }}
+        {{ name }} ({{ items.length }})
 
         <svg
           aria-hidden="true"
