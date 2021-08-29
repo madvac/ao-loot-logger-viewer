@@ -2,7 +2,7 @@
   <tr>
     <td class="player-name" :class="{ died: died }">
       <div :title="died ? `${name} died.` : ''">
-        {{ name }} ({{ items.length }})
+        {{ name }} ({{ totalItemsPickedUp }})
 
         <svg
           aria-hidden="true"
@@ -70,6 +70,19 @@ export default {
     }
   },
   computed: {
+    totalItemsPickedUp() {
+      let total = 0
+
+      for (let itemId in this.pickedUpItems) {
+        total += this.pickedUpItems[itemId].amount
+      }
+
+      for (let itemId in this.resolvedItems) {
+        total += this.resolvedItems[itemId].amount
+      }
+
+      return total
+    },
     items() {
       const items = []
 
