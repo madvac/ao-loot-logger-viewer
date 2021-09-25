@@ -120,6 +120,10 @@ export default function shouldFilterItem(item, filters) {
     if (item.itemId.match(/_VANITY_/)) {
       return false
     }
+
+    if (item.category === 'token') {
+      return false
+    }
   }
 
   return true
