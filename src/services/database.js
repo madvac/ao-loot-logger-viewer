@@ -2,7 +2,7 @@ import axios from 'axios'
 
 class Database {
   constructor(key = '', collectionId = '') {
-    this.valid = key && collectionId
+    this.valid = !!(key && collectionId)
 
     this.axios = axios.create({
       baseURL: 'https://api.jsonbin.io/v3',
