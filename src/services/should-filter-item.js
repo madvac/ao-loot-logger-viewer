@@ -74,6 +74,10 @@ export default function shouldFilterItem(item, filters) {
       return false
     }
 
+    if (item.category === 'skillbooks') {
+      return false
+    }
+
     if (item.category === 'furniture') {
       return false
     }
