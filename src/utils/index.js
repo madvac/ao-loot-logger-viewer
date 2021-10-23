@@ -52,7 +52,7 @@ export function compressData(data) {
     lootLogs: []
   }
 
-  for (const playerName of data.showPlayers) {
+  for (const playerName in data.showPlayers) {
     const filename = data.showPlayers[playerName]
 
     if (compressed.showPlayers[filename] == null) {
