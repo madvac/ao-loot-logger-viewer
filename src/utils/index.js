@@ -152,7 +152,7 @@ export function decompressData(data) {
       decompressed.showPlayers[playerName] = true
     }
   } else {
-    for (const filename of data.showPlayers) {
+    for (const filename in data.showPlayers) {
       for (const playerName of data.showPlayers[filename]) {
         decompressed.showPlayers[playerName] = filename
       }
