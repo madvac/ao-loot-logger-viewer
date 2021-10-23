@@ -95,27 +95,35 @@ export default new Vuex.Store({
       }
 
       for (const file of uploadedFiles.filter(e => e.type === 'show-players')) {
-        if (files[file.filename]) {
-          continue
+        const { filename } = file
+
+        if (files[filename]) {
+          for (let key in showPlayers) {
+            if (showPlayers[key] === filename) {
+              delete showPlayers[key]
+            }
+          }
         }
 
-        files[file.filename] = true
+        files[filename] = true
 
         for (const match of file.matches) {
           const playerName = (match.groups.userName1 || match.groups.userName2).toLowerCase()
 
-          showPlayers[playerName] = true
+          showPlayers[playerName] = filename
         }
       }
 
-      const lootLogs = [...state.lootLogs]
+      let lootLogs = [...state.lootLogs]
 
       for (const file of uploadedFiles.filter(e => e.type === 'loot-logs')) {
-        if (files[file.filename]) {
-          continue
+        const { filename } = file
+
+        if (files[filename]) {
+          lootLogs = lootLogs.filter(log => log.filename != filename)
         }
 
-        files[file.filename] = true
+        files[filename] = true
 
         for (const match of file.matches) {
           const lootedAt = strToDate(match.groups.lootedAt)
@@ -131,7 +139,7 @@ export default new Vuex.Store({
           const category = info.category
           const subcategory = info.subcategory
 
-          const log = { lootedAt, lootedBy, lootedFrom, itemId, itemName, amount, tier, category, subcategory }
+          const log = { filename, lootedAt, lootedBy, lootedFrom, itemId, itemName, amount, tier, category, subcategory }
 
           lootLogs.push(log)
         }
@@ -139,14 +147,16 @@ export default new Vuex.Store({
 
       lootLogs.sort((l1, l2) => l1.lootedAt - l2.lootedAt)
 
-      const chestLogs = [...state.chestLogs]
+      let chestLogs = [...state.chestLogs]
 
       for (const file of uploadedFiles.filter(e => e.type === 'chest-logs')) {
-        if (files[file.filename]) {
-          continue
+        const { filename } = file
+
+        if (files[filename]) {
+          chestLogs = chestLogs.filter(log => log.filename != filename)
         }
 
-        files[file.filename] = true
+        files[filename] = true
 
         for (const match of file.matches) {
           const amount = parseInt(match.groups.amount, 10)
@@ -177,7 +187,7 @@ export default new Vuex.Store({
           const category = info.category
           const subcategory = info.subcategory
 
-          const log = { donatedAt, donatedBy, itemId, itemName, amount, tier, category, subcategory }
+          const log = { filename, donatedAt, donatedBy, itemId, itemName, amount, tier, category, subcategory }
 
           chestLogs.push(log)
         }

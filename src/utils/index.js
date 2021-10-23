@@ -40,16 +40,30 @@ export function copyToClipboard(str) {
 
 export function compressData(data) {
   const compressed = {
-    version: 2,
+    version: 3,
     sha: Items.sha,
     filters: Object.keys(data.filters)
       .filter(key => data.filters[key])
       .join(';'),
     files: Object.keys(data.files).join(';'),
-    showPlayers: Object.keys(data.showPlayers).join(';'),
+    showPlayers: {},
     hidePlayers: Object.keys(data.hidePlayers).join(';'),
     chestLogs: [],
     lootLogs: []
+  }
+
+  for (const playerName of data.showPlayers) {
+    const filename = data.showPlayers[playerName]
+
+    if (compressed.showPlayers[filename] == null) {
+      compressed.showPlayers[filename] = []
+    }
+
+    compressed.showPlayers[filename].push(playerName)
+  }
+
+  for (const filename in compressed.showPlayers) {
+    compressed.showPlayers[filename] = compressed.showPlayers[filename].join(';')
   }
 
   for (const log of data.lootLogs) {
@@ -75,7 +89,7 @@ export function compressData(data) {
 
     const info = Items.getInfoFromId(log.itemId)
 
-    compressed.lootLogs.push([log.lootedAt.unix(), log.lootedBy, info.index, log.amount, log.lootedFrom].join(';'))
+    compressed.lootLogs.push([log.filename, log.lootedAt.unix(), log.lootedBy, info.index, log.amount, log.lootedFrom].join(';'))
   }
 
   for (const log of data.chestLogs) {
@@ -92,7 +106,7 @@ export function compressData(data) {
 
     const info = Items.getInfoFromId(log.itemId)
 
-    compressed.chestLogs.push([log.donatedAt.unix(), log.donatedBy, info.index, log.amount].join(';'))
+    compressed.chestLogs.push([log.filename, log.donatedAt.unix(), log.donatedBy, info.index, log.amount].join(';'))
   }
 
   return compressed
@@ -119,7 +133,7 @@ export function decompressData(data) {
     }
   }
 
-  if (data.version === 1) {
+  if (data.version <= 1) {
     for (const file in data.lootLogs) {
       decompressed.files[file] = true
     }
@@ -133,24 +147,36 @@ export function decompressData(data) {
     }
   }
 
-  for (const player of data.showPlayers.split(';')) {
-    decompressed.showPlayers[player] = true
+  if (data.version <= 2) {
+    for (const playerName of data.showPlayers.split(';')) {
+      decompressed.showPlayers[playerName] = true
+    }
+  } else {
+    for (const filename of data.showPlayers) {
+      for (const playerName of data.showPlayers[filename]) {
+        decompressed.showPlayers[playerName] = filename
+      }
+    }
   }
 
-  for (const player of data.hidePlayers.split(';')) {
-    decompressed.hidePlayers[player] = true
+  for (const playerName of data.hidePlayers.split(';')) {
+    decompressed.hidePlayers[playerName] = true
   }
 
-  if (data.version === 1) {
+  if (data.version <= 1) {
     decompressed.lootLogs = decompressLootLogsDatav1(data.lootLogs)
-  } else {
+  } else if (data.version <= 2) {
     decompressed.lootLogs = decompressLootLogsDatav2(data.lootLogs)
+  } else {
+    decompressed.lootLogs = decompressLootLogsData(data.lootLogs)
   }
 
-  if (data.version === 1) {
+  if (data.version <= 1) {
     decompressed.chestLogs = decompressChestLogsDatav1(data.chestLogs)
-  } else {
+  } else if (data.version <= 2) {
     decompressed.chestLogs = decompressChestLogsDatav2(data.chestLogs)
+  } else {
+    decompressed.chestLogs = decompressChestLogsData(data.chestLogs)
   }
 
   return decompressed
@@ -204,6 +230,30 @@ function decompressLootLogsDatav2(lootLogs) {
   return decompressedLootLogs
 }
 
+function decompressLootLogsData(lootLogs) {
+  const decompressedLootLogs = []
+
+  for (const log of lootLogs) {
+    const [filename, lootedAtUnix, lootedBy, itemIndex, amount, lootedFrom] = log.split(';')
+
+    const info = Items.getInfoFromIndex(itemIndex)
+
+    decompressedLootLogs.push({
+      filename,
+      lootedAt: moment.unix(lootedAtUnix),
+      lootedBy,
+      itemId: info.id,
+      amount: parseInt(amount, 10),
+      lootedFrom,
+      category: info.category,
+      subcategory: info.subcategory,
+      tier: info.tier
+    })
+  }
+
+  return decompressedLootLogs
+}
+
 function decompressChestLogsDatav1(chestLogs) {
   const decompressedChestLogs = []
 
@@ -237,6 +287,29 @@ function decompressChestLogsDatav2(chestLogs) {
     const info = Items.getInfoFromIndex(itemIndex)
 
     decompressedChestLogs.push({
+      donatedAt: moment.unix(donatedAtUnix),
+      donatedBy,
+      itemId: info.id,
+      amount: parseInt(amount, 10),
+      category: info.category,
+      subcategory: info.subcategory,
+      tier: info.tier
+    })
+  }
+
+  return decompressedChestLogs
+}
+
+function decompressChestLogsData(chestLogs) {
+  const decompressedChestLogs = []
+
+  for (const log of chestLogs) {
+    const [filename, donatedAtUnix, donatedBy, itemIndex, amount] = log.split(';')
+
+    const info = Items.getInfoFromIndex(itemIndex)
+
+    decompressedChestLogs.push({
+      filename,
       donatedAt: moment.unix(donatedAtUnix),
       donatedBy,
       itemId: info.id,
