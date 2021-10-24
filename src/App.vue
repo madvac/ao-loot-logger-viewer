@@ -15,6 +15,7 @@
     <div class="content" v-if="hasFiles">
       <Filters
         @share="onShare"
+        @share-blocked="onShareBlocked"
         @export="onExport"
         :disabledShare="sharing || !hasFiles || blockSharing || !validDb"
         :disabledExport="exporting || !hasFiles"
@@ -227,7 +228,10 @@ export default {
 
       return null
     },
-    async onShare() {
+    async onShareBlocked() {
+      return this.onShare(true)
+    },
+    async onShare(block = false) {
       if (this.sharing) {
         return
       }
@@ -235,6 +239,8 @@ export default {
       this.sharing = true
 
       const data = compressData({
+        blockSharing: block,
+        blockUpload: block,
         filters: this.filters,
         files: this.files,
         showPlayers: this.showPlayers,
@@ -324,29 +330,32 @@ export default {
       saveAs(blob, `ao-loot-viewer-${new Date().getTime()}.csv`)
 
       this.exporting = false
+    },
+    async loadItems(sha) {
+      setTimeout(() => {
+        if (!this.initialized) {
+          this.loadingItems = true
+        }
+      }, 1000)
+
+      await Items.init(sha)
+
+      this.initialized = true
+      this.loadingItems = false
     }
   },
   async mounted() {
     window.items = Items
     window.iziToast = iziToast
 
-    setTimeout(() => {
-      if (!this.initialized) {
-        this.loadingItems = true
-      }
-    }, 1500)
-
-    this.initialized = true
-    this.loadingItems = false
-
     if (this.hasFiles || !this.validDb) {
-      return await Items.init()
+      return this.loadItems()
     }
 
     const bin = new URL(location).searchParams.get('b')
 
     if (bin == null) {
-      return await Items.init()
+      return this.loadItems()
     }
 
     this.loadingBin = true
@@ -354,12 +363,14 @@ export default {
     try {
       const { record } = await db.read(bin)
 
-      await Items.init(record.sha)
+      await this.loadItems(record.sha)
 
-      this.setBin(decompressData(record))
+      const data = decompressData(record)
 
-      this.blockSharing = true
-      this.blockUpload = true
+      this.setBin(data)
+
+      this.blockSharing = data.blockSharing
+      this.blockUpload = data.blockUpload
     } catch (error) {
       console.error(error)
 

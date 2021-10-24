@@ -41,6 +41,8 @@ export function copyToClipboard(str) {
 export function compressData(data) {
   const compressed = {
     version: 3,
+    blockSharing: true,
+    blockUpload: true,
     sha: Items.sha,
     filters: Object.keys(data.filters)
       .filter(key => data.filters[key])
@@ -51,6 +53,9 @@ export function compressData(data) {
     chestLogs: [],
     lootLogs: []
   }
+
+  compressed.blockSharing = data.blockSharing
+  compressed.blockUpload = data.blockUpload
 
   for (const playerName in data.showPlayers) {
     const filename = data.showPlayers[playerName]
@@ -118,11 +123,21 @@ export function decompressData(data) {
   }
 
   const decompressed = {
+    blockSharing: true,
+    blockUpload: true,
     files: {},
     showPlayers: {},
     hidePlayers: {},
     chestLogs: [],
     lootLogs: []
+  }
+
+  if (data.blockSharing != null) {
+    decompressed.blockSharing = data.blockSharing
+  }
+
+  if (data.blockUpload != null) {
+    decompressed.blockUpload = data.blockUpload
   }
 
   if (data.filters != null) {
@@ -147,20 +162,24 @@ export function decompressData(data) {
     }
   }
 
-  if (data.version <= 2) {
-    for (const playerName of data.showPlayers.split(';')) {
-      decompressed.showPlayers[playerName] = true
-    }
-  } else {
-    for (const filename in data.showPlayers) {
-      for (const playerName of data.showPlayers[filename]) {
-        decompressed.showPlayers[playerName] = filename
+  if (data.showPlayers) {
+    if (data.version <= 2) {
+      for (const playerName of data.showPlayers.split(';')) {
+        decompressed.showPlayers[playerName] = true
+      }
+    } else {
+      for (const filename in data.showPlayers) {
+        for (const playerName of data.showPlayers[filename].split(';')) {
+          decompressed.showPlayers[playerName] = filename
+        }
       }
     }
   }
 
-  for (const playerName of data.hidePlayers.split(';')) {
-    decompressed.hidePlayers[playerName] = true
+  if (data.hidePlayers) {
+    for (const playerName of data.hidePlayers.split(';')) {
+      decompressed.hidePlayers[playerName] = true
+    }
   }
 
   if (data.version <= 1) {
