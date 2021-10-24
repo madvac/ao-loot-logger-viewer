@@ -12,49 +12,7 @@
 
     <Logo :small="hasFiles" @click="reset" />
 
-    <div class="content" v-if="hasFiles">
-      <Filters
-        @share="onShare"
-        @share-blocked="onShareBlocked"
-        @export="onExport"
-        :disabledShare="sharing || !hasFiles || blockSharing || !validDb"
-        :disabledExport="exporting || !hasFiles"
-      />
-
-      <table id="loot-table" class="table table-bordered" v-if="sortedFilteredPlayers.length">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Items</th>
-          </tr>
-        </thead>
-        <tbody>
-          <PlayerLoot
-            v-for="playerName in sortedFilteredPlayers"
-            :key="playerName"
-            :name="filteredPlayers[playerName].name"
-            :died="filteredPlayers[playerName].died"
-            :picked-up-items="filteredPlayers[playerName].pickedUpItems"
-            :resolved-items="filters.resolved ? filteredPlayers[playerName].resolvedItems : {}"
-            :lost-items="filters.lost ? filteredPlayers[playerName].lostItems : {}"
-            :donated-items="filters.donated ? filteredPlayers[playerName].donatedItems : {}"
-          />
-        </tbody>
-      </table>
-
-      <div v-else class="no-players">
-        <p>No loot to display.</p>
-        <p>Update the filters or upload more files.</p>
-      </div>
-    </div>
-
-    <div class="content file-upload">
-      <Upload @change="drop" :popup="hasFiles" :disabled="!initialized || loadingBin || blockUpload" />
-
-      <a href="#faq" v-if="!hasFiles">Read the FAQ</a>
-
-      <FAQ v-if="!hasFiles" />
-    </div>
+    <router-view></router-view>
 
     <Footer />
 
@@ -66,14 +24,9 @@
 import { mapGetters, mapMutations, mapState } from 'vuex'
 import iziToast from 'izitoast'
 
-import FAQ from './components/FAQ.vue'
-import Filters from './components/Filters.vue'
 import Footer from './components/Footer.vue'
 import GitHubCorner from './components/GitHubCorner.vue'
 import Logo from './components/Logo.vue'
-import PlayerLoot from './components/PlayerLoot.vue'
-import Upload from './components/Upload.vue'
-
 import Database from './services/database'
 import Items from './services/items'
 
@@ -87,28 +40,20 @@ const db = new Database(process.env.VUE_APP_BIN_KEY, process.env.VUE_APP_COLLECT
 export default {
   name: 'App',
   components: {
-    PlayerLoot,
-    Filters,
     GitHubCorner,
     Footer,
     Logo,
-    FAQ,
-    Upload
   },
   data() {
     return {
-      initialized: false,
       loadingItems: false,
       sharing: false,
       exporting: false,
-      blockSharing: false,
-      loadingBin: false,
       validDb: db.valid,
-      blockUpload: false
     }
   },
   computed: {
-    ...mapState(['files', 'filters', 'lootLogs', 'chestLogs', 'showPlayers', 'hidePlayers']),
+    ...mapState(['files', 'filters', 'lootLogs', 'chestLogs', 'showPlayers', 'hidePlayers', 'initialized', 'loadingBin', 'blockUpload', 'blockSharing']),
     ...mapGetters(['filteredPlayers', 'hasFiles']),
     sortedFilteredPlayers() {
       return Object.values(this.filteredPlayers)
@@ -146,7 +91,7 @@ export default {
     }
   },
   methods: {
-    ...mapMutations(['reset', 'setBin']),
+    ...mapMutations(['reset', 'setBin', 'setInitialized', 'setLoadingBin', 'setBlockUpload', 'setBlockSharing']),
     dragover() {
       if (!this.initialized || this.loadingBin || this.blockUpload) {
         return
@@ -340,7 +285,7 @@ export default {
 
       await Items.init(sha)
 
-      this.initialized = true
+      this.setInitialized(true)
       this.loadingItems = false
     }
   },
@@ -358,7 +303,7 @@ export default {
       return this.loadItems()
     }
 
-    this.loadingBin = true
+    this.setLoadingBin(true)
 
     try {
       const { record } = await db.read(bin)
@@ -369,8 +314,8 @@ export default {
 
       this.setBin(data)
 
-      this.blockSharing = data.blockSharing
-      this.blockUpload = data.blockUpload
+      this.setBlockSharing(data.blockSharing)
+      this.setBlockUpload(data.blockUpload)
     } catch (error) {
       console.error(error)
 
@@ -391,7 +336,7 @@ export default {
       }
     }
 
-    this.loadingBin = false
+    this.setLoadingBin(false)
   }
 }
 </script>
@@ -453,50 +398,6 @@ a {
 
 .dragover .home {
   border-color: var(--primary-color);
-}
-
-#loot-table {
-  border-collapse: collapse;
-  color: var(--font-color);
-  border-spacing: 0px;
-}
-
-.no-players {
-  background-color: rgba(0, 0, 0, 0.2);
-  width: 100%;
-  text-align: center;
-  padding-top: 1rem;
-}
-
-.content {
-  flex: 1 0 auto;
-  width: 80%;
-  max-width: 1280px;
-  margin-bottom: 32px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-table {
-  border-color: transparent !important;
-  background-color: rgba(0, 0, 0, 0.25);
-  border-radius: 5px;
-
-  thead {
-    color: var(--primary-color);
-  }
-
-  tr:nth-child(2n + 2) {
-    background-color: rgba(0, 0, 0, 0.1);
-  }
-}
-
-th {
-  padding: 8px;
-  text-align: center;
-  min-width: 200px;
-  vertical-align: middle;
 }
 
 .loading,

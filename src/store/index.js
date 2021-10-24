@@ -63,6 +63,10 @@ export default new Vuex.Store({
   strict: true,
   plugins: [vuexLocal.plugin],
   state: {
+    initialized: false,
+    loadingBin: false,
+    blockUpload: false,
+    blockSharing: false,
     showPlayers: {},
     hidePlayers: {},
     files: {},
@@ -82,6 +86,18 @@ export default new Vuex.Store({
       state.lootLogs = []
 
       window.history.pushState({}, '', process.env.BASE_URL)
+    },
+    setInitialized(state, value) {
+      state.initialized = value
+    },
+    setLoadingBin(state, value) {
+      state.loadingBin = value
+    },
+    setBlockUpload(state, value) {
+      state.blockUpload = value
+    },
+    setBlockSharing(state, value) {
+      state.blockSharing = value
     },
     uploadedFiles(state, { uploadedFiles }) {
       console.time('uploadedFiles')
