@@ -27,5 +27,16 @@ iziToast.settings({
 new Vue({
   store,
   router,
-  render: h => h(App)
+  render: h => h(App),
+  created () {
+    if (sessionStorage.redirect) {
+      const redirect = sessionStorage.redirect
+
+      delete sessionStorage.redirect
+
+      console.log(redirect)
+
+      this.$router.push(redirect)
+    }
+  }
 }).$mount('#app')
