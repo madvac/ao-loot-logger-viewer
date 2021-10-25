@@ -73,6 +73,7 @@ export default new Vuex.Store({
     exporting: false,
     initialized: false,
     loadingBin: false,
+    loadingItems: false,
     sharing: false,
     files: {},
     hidePlayers: {},
@@ -90,6 +91,7 @@ export default new Vuex.Store({
       state.blockUpload = false
       state.exporting = false
       state.loadingBin = false
+      state.loadingItems = false
       state.sharing = false
       state.files = {}
       state.hidePlayers = {}
@@ -102,6 +104,9 @@ export default new Vuex.Store({
     },
     setLoadingBin(state, value) {
       state.loadingBin = value
+    },
+    setLoadingItems(state, value) {
+      state.loadingItems = value
     },
     setBlockUpload(state, value) {
       state.blockUpload = value

@@ -39,11 +39,6 @@ export default {
     Footer,
     Logo,
   },
-  data() {
-    return {
-      loadingItems: false
-    }
-  },
   computed: {
     ...mapState([
       'blockSharing',
@@ -55,6 +50,7 @@ export default {
       'hidePlayers',
       'initialized',
       'loadingBin',
+      'loadingItems',
       'lootLogs',
       'sharing',
       'showPlayers',
@@ -77,7 +73,15 @@ export default {
     }
   },
   methods: {
-    ...mapMutations(['setBin', 'setInitialized', 'setLoadingBin', 'setBlockUpload', 'setBlockSharing', 'reset']),
+    ...mapMutations([
+      'reset',
+      'setBin',
+      'setBlockSharing',
+      'setBlockUpload',
+      'setInitialized',
+      'setLoadingBin',
+      'setLoadingItems',
+    ]),
     ...mapActions(['upload']),
     dragover() {
       if (!this.initialized || this.loadingBin || this.blockUpload) {
@@ -90,16 +94,18 @@ export default {
       document.body.classList.remove('dragover')
     },
     async loadItems(sha) {
+      this.setInitialized(false)
+
       setTimeout(() => {
         if (!this.initialized) {
-          this.loadingItems = true
+          this.setLoadingItems(true)
         }
       }, 2000)
 
       await Items.init(sha)
 
       this.setInitialized(true)
-      this.loadingItems = false
+      this.setLoadingItems(false)
     },
     async loadBin(bin) {
       this.setLoadingBin(true)
@@ -113,10 +119,14 @@ export default {
 
         this.setBin(data)
 
+
+        this.setLoadingBin(false)
         this.setBlockSharing(data.blockSharing)
         this.setBlockUpload(data.blockUpload)
       } catch (error) {
-        const promise = this.loadItems()
+        await this.loadItems()
+
+        this.setLoadingBin(false)
 
         console.error(error)
 
@@ -134,6 +144,13 @@ export default {
             progressBarColor: 'red',
             titleColor: 'red'
           })
+        } else if (error?.response?.status === 404 && error?.response?.message?.indexOf('Bin not found') !== -1) {
+          iziToast.error({
+            title: 'Error',
+            message: 'List of items not found.',
+            progressBarColor: 'red',
+            titleColor: 'red'
+          })
         } else {
           iziToast.error({
             title: 'Error',
@@ -143,39 +160,40 @@ export default {
           })
         }
 
-        await promise
+        router.push('/')
       }
-
-      this.setLoadingBin(false)
     }
   },
   async mounted() {
+    console.log('mounted', this.$route.path)
+
     window.$route = this.$route
 
     if (this.$route.query.b) {
-      router.replace(`/${this.$route.query.b}`)
+      return router.replace(`/${this.$route.query.b}`)
     }
 
-    if (this.hasFiles || !database.valid) {
-      return this.loadItems()
+    if (this.$route.params.bin) {
+      return this.loadBin(this.$route.params.bin)
     }
 
-    const bin = this.$route.params.bin
-
-    if (bin == null) {
-      return this.loadItems()
-    }
-
-    return this.loadBin(bin)
-
+    this.loadItems()
   },
   watch: {
-    $route(to) {
+    $route(to, from) {
+      console.log('watch $route', { to,from })
+
       if (to.path === '/') {
-        return this.reset()
+        this.reset()
+
+        return this.loadItems()
       }
 
-      if (to.params.bin != null) {
+      if (this.$route.query.b) {
+        router.replace(`/${this.$route.query.b}`)
+      }
+
+      if (from.query.b && from.query.b === to.params.bin) {
         return this.loadBin(to.params.bin)
       }
     }

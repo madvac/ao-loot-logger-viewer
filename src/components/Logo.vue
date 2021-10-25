@@ -1,15 +1,17 @@
 <template>
   <div>
-    <router-link to="/">
-      <img :class="{ small: small }" src="assets/logo.png" alt="Loot Logger Logo" @click="reset" />
+    <router-link v-if="small" to="/">
+      <img class="small" src="assets/logo.png" alt="Loot Logger Logo" @click="onClick" />
     </router-link>
 
-    <!-- <img v-else :class="{ small: small }" src="assets/logo.png" alt="Loot Logger Logo" /> -->
+    <img v-else src="assets/logo.png" alt="Loot Logger Logo" />
   </div>
 </template>
 
 <script>
-import { mapMutations, mapGetters } from 'vuex'
+import { mapMutations, mapState, mapGetters } from 'vuex'
+
+import Items from '../services/items'
 
 export default {
   name: 'Logo',
@@ -20,6 +22,7 @@ export default {
     }
   },
   computed: {
+    ...mapState(['initialized']),
     ...mapGetters(['hasFiles']),
     isClickable() {
       console.log(this.$route.path)
@@ -28,9 +31,22 @@ export default {
     }
   },
   methods: {
-    ...mapMutations(['reset']),
-    onClick() {
+    ...mapMutations(['reset', 'setInitialized', 'setLoadingItems']),
+    async onClick() {
       this.reset()
+
+      this.setInitialized(false)
+
+      setTimeout(() => {
+        if (!this.initialized) {
+          this.setLoadingItems(true)
+        }
+      }, 2000)
+
+      await Items.init()
+
+      this.setInitialized(true)
+      this.setLoadingItems(false)
     }
   }
 }
