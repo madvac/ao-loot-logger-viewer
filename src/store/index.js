@@ -622,6 +622,10 @@ export default new Vuex.Store({
 
       commit('setSharing', true)
 
+      if (Items.sha === 'master') {
+        await Items.loadSHA()  
+      }
+
       const data = compressData({
         blockSharing: block,
         blockUpload: block,

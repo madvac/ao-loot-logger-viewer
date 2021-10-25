@@ -36,24 +36,27 @@ class Items {
     return this.items[itemIndex]
   }
 
-  async init(sha = null) {
+  async loadSHA() {
+    console.info('loading latest SHA from ao-bin-dumps')
+
+    const response = await axios.get('https://api.github.com/repos/broderickhyman/ao-bin-dumps/commits/master')
+
+    console.log('latest SHA from ao-bin-dumps', response.data.sha)
+
+    this.sha = response.data.sha
+  }
+
+  async init(sha = 'master') {
     if (sha === this.sha && this.isInitialized) {
       return
     }
 
+    console.info(`loading items from ao-bin-dumps. SHA=${sha}`)
+
     this.isInitialized = true
+    this.sha = sha
 
-    let response = null
-
-    if (sha) {
-      this.sha = sha
-    } else {
-      response = await axios.get('https://api.github.com/repos/broderickhyman/ao-bin-dumps/commits/master')
-
-      this.sha = response.data.sha
-    }
-
-    response = await axios.get(
+    let response = await axios.get(
       `https://raw.githubusercontent.com/broderickhyman/ao-bin-dumps/${this.sha}/formatted/items.json`
     )
 
@@ -76,18 +79,6 @@ class Items {
       if (this.items[name] == null || item.UniqueName.indexOf('@') === -1) {
         this.items[name] = data
       }
-
-      // this.idToName[item.UniqueName] = name
-      // this.locNameVarToName[item.LocalizationNameVariable] = name
-      // this.indexToName[item.Index] = name
-
-      // if (this.nameToInfo[name] == null || item.UniqueName.indexOf('@') === -1) {
-      //   this.nameToInfo[name] = {
-      //     name,
-      //     id: item.UniqueName,
-      //     index: item.Index
-      //   }
-      // }
     }
 
     response = await axios.get(`https://raw.githubusercontent.com/broderickhyman/ao-bin-dumps/${this.sha}/items.json`)
