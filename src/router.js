@@ -5,7 +5,11 @@ import Home from './pages/Home.vue'
 const router = new VueRouter({
   mode: 'history',
   routes: [
-    { path: '/', component: Home },
+    {
+      path: '/:bin?',
+      component: Home,
+    },
+    { path: '*', redirect: '/' }
   ]
 })
 

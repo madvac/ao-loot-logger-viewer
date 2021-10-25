@@ -6,7 +6,7 @@
         </path>
       </svg>
     </button>
-    <div class="control-name">Share Read-Only</div>
+    <div class="control-name control-read-only">Share Read-Only</div>
   </div>
 
 </template>
@@ -25,7 +25,9 @@ export default {
 }
 </script>
 
-<style lang="scss">
-
+<style scoped lang="scss">
+div.control-name.control-read-only {
+  font-size: 0.5em;
+}
 </style>
 

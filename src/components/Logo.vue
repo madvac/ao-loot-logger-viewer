@@ -1,16 +1,36 @@
 <template>
   <div>
-    <img :class="{ small: small }" src="assets/logo.png" alt="Loot Logger Logo" @click="() => $emit('click')" />
+    <router-link to="/">
+      <img :class="{ small: small }" src="assets/logo.png" alt="Loot Logger Logo" @click="reset" />
+    </router-link>
+
+    <!-- <img v-else :class="{ small: small }" src="assets/logo.png" alt="Loot Logger Logo" /> -->
   </div>
 </template>
 
 <script>
+import { mapMutations, mapGetters } from 'vuex'
+
 export default {
   name: 'Logo',
   props: {
     small: {
       type: Boolean,
       default: false
+    }
+  },
+  computed: {
+    ...mapGetters(['hasFiles']),
+    isClickable() {
+      console.log(this.$route.path)
+
+      return this.hasFiles || this.$route.path !== '/'
+    }
+  },
+  methods: {
+    ...mapMutations(['reset']),
+    onClick() {
+      this.reset()
     }
   }
 }
@@ -26,6 +46,9 @@ img {
   width: 20%;
   max-width: 250px;
   min-width: 150px;
+}
+
+.clickable {
   cursor: pointer;
 }
 

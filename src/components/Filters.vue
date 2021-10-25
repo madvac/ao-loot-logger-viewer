@@ -1,12 +1,5 @@
 <template>
   <div class="filters-container">
-    <div class="controls">
-      <ExportButton class="control" />
-
-      <ShareButton class="control" />
-
-      <ShareReadOnlyButton class="control" />
-    </div>
     <div class="filters">
       <div v-for="(value, name) in filters" :key="name" class="filter">
         <button @click="() => toggleFilter(name)" :id="name">
@@ -45,6 +38,12 @@
         </button>
         <div class="filter-name">{{ name }}</div>
       </div>
+
+      <ExportButton class="control" />
+
+      <ShareButton class="control" />
+
+      <ShareReadOnlyButton class="control" />
     </div>
   </div>
 </template>
@@ -86,23 +85,17 @@ export default {
   justify-content: center;
   align-items: center;
   margin-bottom: 3rem;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
 
-  .controls {
-    display: grid;
-    grid-template-columns: 120px 120px 120px;
-    margin-bottom: 1em;
+  .control {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 
-    .control {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-
-      .control-name {
-        text-transform: capitalize;
-        font-size: 0.8em;
-      }
+    .control-name {
+      text-transform: capitalize;
+      font-size: 0.8em;
     }
   }
 
@@ -112,21 +105,22 @@ export default {
     grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
     width: 100%;
     text-align: center;
+
+    .filter {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      .filter-name {
+        text-transform: capitalize;
+        font-size: 0.8em;
+      }
+    }
   }
 
   .form-check-inline {
     margin-right: 1.5em;
-  }
-
-  .filter {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .filter-name {
-    text-transform: capitalize;
-    font-size: 0.8em;
   }
 
   svg {

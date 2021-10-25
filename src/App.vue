@@ -10,7 +10,7 @@
       <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
     </div>
 
-    <Logo :small="hasFiles" @click="reset" />
+    <Logo :small="hasFiles || loadingBin" />
 
     <router-view></router-view>
 
@@ -30,6 +30,7 @@ import Logo from './components/Logo.vue'
 import database from './services/database'
 import Items from './services/items'
 import { decompressData } from './utils'
+import router from './router'
 
 export default {
   name: 'App',
@@ -76,7 +77,7 @@ export default {
     }
   },
   methods: {
-    ...mapMutations(['reset', 'setBin', 'setInitialized', 'setLoadingBin', 'setBlockUpload', 'setBlockSharing']),
+    ...mapMutations(['setBin', 'setInitialized', 'setLoadingBin', 'setBlockUpload', 'setBlockSharing', 'reset']),
     ...mapActions(['upload']),
     dragover() {
       if (!this.initialized || this.loadingBin || this.blockUpload) {
@@ -99,57 +100,85 @@ export default {
 
       this.setInitialized(true)
       this.loadingItems = false
+    },
+    async loadBin(bin) {
+      this.setLoadingBin(true)
+
+      try {
+        const { record } = await database.read(bin)
+
+        await this.loadItems(record.sha)
+
+        const data = decompressData(record)
+
+        this.setBin(data)
+
+        this.setBlockSharing(data.blockSharing)
+        this.setBlockUpload(data.blockUpload)
+      } catch (error) {
+        const promise = this.loadItems()
+
+        console.error(error)
+
+        if (error?.response?.status === 403 && error?.response?.message?.indexOf('Requests exhausted') !== -1) {
+          iziToast.error({
+            title: 'Error',
+            message: 'Sorry. The free database is exausted. :(',
+            progressBarColor: 'red',
+            titleColor: 'red'
+          })
+        } else if (error?.response?.status === 422 && error?.response?.message?.indexOf('Invalid Record ID') !== -1) {
+          iziToast.error({
+            title: 'Error',
+            message: 'List of items not found.',
+            progressBarColor: 'red',
+            titleColor: 'red'
+          })
+        } else {
+          iziToast.error({
+            title: 'Error',
+            message: error.message || 'Something went wrong. :(',
+            progressBarColor: 'red',
+            titleColor: 'red'
+          })
+        }
+
+        await promise
+      }
+
+      this.setLoadingBin(false)
     }
   },
   async mounted() {
+    window.$route = this.$route
+
+    if (this.$route.query.b) {
+      router.replace(`/${this.$route.query.b}`)
+    }
+
     if (this.hasFiles || !database.valid) {
       return this.loadItems()
     }
 
-    const bin = new URL(location).searchParams.get('b')
+    const bin = this.$route.params.bin
 
     if (bin == null) {
       return this.loadItems()
     }
 
-    this.setLoadingBin(true)
+    return this.loadBin(bin)
 
-    try {
-      const { record } = await database.read(bin)
-
-      await this.loadItems(record.sha)
-
-      const data = decompressData(record)
-
-      this.setBin(data)
-
-      this.setBlockSharing(data.blockSharing)
-      this.setBlockUpload(data.blockUpload)
-    } catch (error) {
-      const promise = this.loadItems()
-
-      console.error(error)
-
-      if (error?.response?.status === 403 && error?.response?.message?.indexOf('Requests exhausted') !== -1) {
-        iziToast.error({
-          title: 'Error',
-          message: 'Sorry. The free database is exausted. :(',
-          progressBarColor: 'red',
-          titleColor: 'red'
-        })
-      } else {
-        iziToast.error({
-          title: 'Error',
-          message: error.message || 'Something went wrong. :(',
-          progressBarColor: 'red',
-          titleColor: 'red'
-        })
+  },
+  watch: {
+    $route(to) {
+      if (to.path === '/') {
+        return this.reset()
       }
 
-      await promise
+      if (to.params.bin != null) {
+        return this.loadBin(to.params.bin)
+      }
     }
-
-    this.setLoadingBin(false)
   }
 }
 </script>
@@ -237,14 +266,14 @@ a {
 
     &.progress-bar-striped {
       background-image: linear-gradient(
-        45deg,
-        rgba(0, 0, 0, 0.2) 25%,
-        transparent 25%,
-        transparent 50%,
-        rgba(0, 0, 0, 0.2) 50%,
-        rgba(0, 0, 0, 0.2) 75%,
-        transparent 75%,
-        transparent
+      45deg,
+      rgba(0, 0, 0, 0.2) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgba(0, 0, 0, 0.2) 50%,
+      rgba(0, 0, 0, 0.2) 75%,
+      transparent 75%,
+      transparent
       );
     }
   }

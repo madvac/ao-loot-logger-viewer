@@ -96,10 +96,6 @@ export default new Vuex.Store({
       state.showPlayers = {}
       state.chestLogs = []
       state.lootLogs = []
-
-      // w:indow.history.pushState({}, '', process.env.BASE_URL)
-      
-      router.replace('/')
     },
     setInitialized(state, value) {
       state.initialized = value
@@ -635,7 +631,7 @@ export default new Vuex.Store({
       try {
         const bin = await database.create(data)
 
-        window.history.pushState({}, '', `?b=${bin}`)
+        router.replace(`/${bin}`)
 
         iziToast.success({
           title: 'Success',

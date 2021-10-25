@@ -1,6 +1,6 @@
 <template>
   <div class="content-root">
-    <div class="content" v-if="hasFiles">
+    <div class="content" v-if="hasFiles || loadingBin">
       <Filters />
 
       <table id="loot-table" class="table table-bordered" v-if="sortedFilteredPlayers.length">
@@ -23,19 +23,23 @@
             />
         </tbody>
       </table>
+      
+      <div v-else-if="loadingBin" class="loading-bin">
+        <p>Loading...</p>
+      </div>
 
       <div v-else class="no-players">
-        <p>No loot to display.</p>
+        <p>This item list is empty.</p>
         <p>Update the filters or upload more files.</p>
       </div>
     </div>
 
     <div class="content file-upload">
-      <Upload @change="upload" :popup="hasFiles" :disabled="!initialized || loadingBin || blockUpload" />
+      <Upload @change="upload" :popup="hasFiles || loadingBin" :disabled="!initialized || loadingBin || blockUpload" />
 
-      <a href="#faq" v-if="!hasFiles">Read the FAQ</a>
+      <a href="#faq" v-if="!hasFiles && !loadingBin">Read the FAQ</a>
 
-      <FAQ v-if="!hasFiles" />
+      <FAQ v-if="!hasFiles && !loadingBin" />
     </div>
   </div>
 </template>
@@ -85,9 +89,31 @@ export default {
 
   .no-players {
     background-color: rgba(0, 0, 0, 0.2);
-    width: 100%;
+    padding: 2rem;
     text-align: center;
-    padding-top: 1rem;
+    width: 100%;
+
+    p {
+      margin: 0;
+    }
+
+    p + p {
+      margin-top: 1rem;
+    }
+  }
+
+  .loading-bin {
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    width: 100%;
+
+    p {
+      margin: 0;
+    }
   }
 
   table {
