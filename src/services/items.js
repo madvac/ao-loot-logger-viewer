@@ -41,8 +41,6 @@ class Items {
       return
     }
 
-    console.time('items.init')
-
     this.isInitialized = true
 
     let response = null
@@ -164,8 +162,6 @@ class Items {
         }
       }
     }
-
-    console.timeEnd('items.init')
   }
 }
 

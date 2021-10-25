@@ -1,13 +1,7 @@
 <template>
   <div class="content-root">
     <div class="content" v-if="hasFiles">
-      <Filters
-        @share="onShare"
-        @share-blocked="onShareBlocked"
-        @export="onExport"
-        :disabledShare="sharing || !hasFiles || blockSharing || !validDb"
-        :disabledExport="exporting || !hasFiles"
-        />
+      <Filters />
 
       <table id="loot-table" class="table table-bordered" v-if="sortedFilteredPlayers.length">
         <thead>
@@ -47,7 +41,7 @@
 </template>
 
 <script>
-import { mapActions, mapState } from 'vuex'
+import { mapActions, mapGetters, mapState } from 'vuex'
 
 import FAQ from '../components/FAQ.vue'
 import Filters from '../components/Filters.vue'
@@ -63,7 +57,8 @@ export default {
     Upload,
   },
   computed: {
-    ...mapState(['initialized', 'loadingBin', 'blockUpload', 'hasFiles'])
+    ...mapState(['filters', 'initialized', 'loadingBin', 'blockUpload']),
+    ...mapGetters(['sortedFilteredPlayers', 'filteredPlayers', 'hasFiles']),
   },
   methods: {
    ...mapActions([
@@ -76,6 +71,7 @@ export default {
 <style lang="scss">
 .content-root {
   flex: 1 0 auto;
+  width: 80%;
 }
 
 .content {

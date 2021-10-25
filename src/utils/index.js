@@ -41,8 +41,8 @@ export function copyToClipboard(str) {
 export function compressData(data) {
   const compressed = {
     version: 3,
-    blockSharing: true,
-    blockUpload: true,
+    blockSharing: !!data.blockSharing,
+    blockUpload: !!data.blockUpload,
     sha: Items.sha,
     filters: Object.keys(data.filters)
       .filter(key => data.filters[key])
@@ -53,9 +53,6 @@ export function compressData(data) {
     chestLogs: [],
     lootLogs: []
   }
-
-  compressed.blockSharing = data.blockSharing
-  compressed.blockUpload = data.blockUpload
 
   for (const playerName in data.showPlayers) {
     const filename = data.showPlayers[playerName]

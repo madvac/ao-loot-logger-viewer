@@ -1,11 +1,16 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import VuexPersistence from 'vuex-persist'
+import iziToast from 'izitoast'
 
 import deepFreeze from '../utils/deepFreeze'
 import Items from '../services/items'
 import { strToDate } from '../utils/date'
 import shouldFilterItem from '../services/should-filter-item'
+import regex from '../utils/regex'
+import router from '../router'
+import database from '../services/database'
+import { copyToClipboard, compressData } from '../utils'
 
 Vue.use(Vuex)
 
@@ -63,15 +68,17 @@ export default new Vuex.Store({
   strict: true,
   plugins: [vuexLocal.plugin],
   state: {
+    blockSharing: false,
+    blockUpload: false,
+    exporting: false,
     initialized: false,
     loadingBin: false,
-    blockUpload: false,
-    blockSharing: false,
-    showPlayers: {},
-    hidePlayers: {},
+    sharing: false,
     files: {},
-    lootLogs: [],
+    hidePlayers: {},
+    showPlayers: {},
     chestLogs: [],
+    lootLogs: [],
     filters: {
       ...FILTERS
     }
@@ -79,13 +86,20 @@ export default new Vuex.Store({
   mutations: {
     RESTORE_MUTATION: vuexLocal.RESTORE_MUTATION,
     reset(state) {
-      state.showPlayers = {}
-      state.hidePlayers = {}
+      state.blockSharing = false
+      state.blockUpload = false
+      state.exporting = false
+      state.loadingBin = false
+      state.sharing = false
       state.files = {}
+      state.hidePlayers = {}
+      state.showPlayers = {}
       state.chestLogs = []
       state.lootLogs = []
 
-      window.history.pushState({}, '', process.env.BASE_URL)
+      // w:indow.history.pushState({}, '', process.env.BASE_URL)
+      
+      router.replace('/')
     },
     setInitialized(state, value) {
       state.initialized = value
@@ -99,9 +113,13 @@ export default new Vuex.Store({
     setBlockSharing(state, value) {
       state.blockSharing = value
     },
-    uploadedFiles(state, { uploadedFiles }) {
-      console.time('uploadedFiles')
-
+    setSharing(state, value) {
+      state.sharing = value
+    },
+    setExporting(state, value) {
+      state.exporting = value
+    },
+    uploadedFiles(state, uploadedFiles) {
       const files = {
         ...state.files
       }
@@ -215,8 +233,6 @@ export default new Vuex.Store({
       state.files = deepFreeze(files)
       state.lootLogs = deepFreeze(lootLogs)
       state.chestLogs = deepFreeze(chestLogs)
-
-      console.timeEnd('uploadedFiles')
     },
     toggleFilter(state, name) {
       if (state.filters[name] != null) {
@@ -259,12 +275,13 @@ export default new Vuex.Store({
     }
   },
   getters: {
+    disabledShare(state, getters) {
+      return state.sharing || !getters.hasFiles || state.blockSharing || !database.valid
+    },
     hasFiles(state) {
       return Object.keys(state.files).length > 0
     },
     allPlayers(state, getters) {
-      console.time('allPlayers')
-
       const players = {}
 
       // PICK UP ITEMS
@@ -464,13 +481,9 @@ export default new Vuex.Store({
 
       const allPlayersFrozen = deepFreeze(players)
 
-      console.timeEnd('allPlayers')
-
       return allPlayersFrozen
     },
     filteredPlayers(state, getters) {
-      console.time('filteredPlayers')
-
       const players = {}
       const hasShowPlayers = Object.keys(state.showPlayers).length > 0
 
@@ -488,13 +501,28 @@ export default new Vuex.Store({
         players[lowerPlayerName] = getters.allPlayers[playerName]
       }
 
-      console.timeEnd('filteredPlayers')
-
       return players
     },
-    uniqueLootLogs(state) {
-      console.time('uniqueLootLogs')
+    sortedFilteredPlayers(state, getters) {
+      return Object.values(getters.filteredPlayers)
+        .sort((a, b) => {
+          if (a.amountOfPickedUpItems !== b.amountOfPickedUpItems) {
+            return b.amountOfPickedUpItems - a.amountOfPickedUpItems
+          }
 
+          if (state.filters.resolved && a.amountOfResolvedItems !== b.amountOfResolvedItems) {
+            return b.amountOfResolvedItems - a.amountOfResolvedItems
+          }
+
+          if (state.filters.donated && a.amountOfDonatedItems !== b.amountOfDonatedItems) {
+            return b.amountOfDonatedItems - a.amountOfDonatedItems
+          }
+
+          return 0
+        })
+        .map(p => p.name.toLowerCase())
+    },
+    uniqueLootLogs(state) {
       const uniqueLootLogs = []
       const searchIndex = {}
 
@@ -528,31 +556,152 @@ export default new Vuex.Store({
 
       const uniqueLootLogsFrozen = deepFreeze(uniqueLootLogs)
 
-      console.timeEnd('uniqueLootLogs')
-
       return uniqueLootLogsFrozen
     },
     filteredLoot(state, getters) {
-      console.time('filteredLoot')
-
       const filteredLoot = getters.uniqueLootLogs.filter(loot => shouldFilterItem(loot, state.filters))
 
       const filteredLootFrozen = deepFreeze(filteredLoot)
 
-      console.timeEnd('filteredLoot')
-
       return filteredLootFrozen
     },
     filteredDonations(state) {
-      console.time('filteredDonations')
-
       const filteredDonations = state.chestLogs.filter(loot => shouldFilterItem(loot, state.filters))
 
       const filteredDonationsFrozen = deepFreeze(filteredDonations)
 
-      console.timeEnd('filteredDonations')
-
       return filteredDonationsFrozen
+    }
+  },
+  actions: {
+    async upload({ commit, state }, event) {
+      document.body.classList.remove('dragover')
+
+      if (!state.initialized) {
+        return iziToast.error({
+          title: 'Error',
+          message: 'The app is still loading. Try again in a few seconds.',
+          progressBarColor: 'red',
+          titleColor: 'red'
+        })
+      }
+
+      if (state.loadingBin || state.blockUpload) {
+        return iziToast.error({
+          title: 'Error',
+          message: 'Upload is blocked.',
+          progressBarColor: 'red',
+          titleColor: 'red'
+        })
+      }
+
+      const droppedFiles = Array.from(event.dataTransfer ? event.dataTransfer.files : event.target.files)
+
+      const promises = droppedFiles.map(file => {
+        return new Promise(resolve => {
+          const reader = new FileReader()
+
+          reader.onload = evt => resolve({ filename: file.name, content: evt.target.result })
+
+          reader.readAsText(file, 'UTF-8')
+        })
+      })
+
+      const files = await Promise.all(promises)
+
+      const matches = files.map(file => getMatchesFromFile(file))
+        .filter(matches => matches != null)
+
+      commit('uploadedFiles', matches)
+    },
+    async share({ commit, state }, block = true) {
+      if (state.sharing) {
+        return
+      }
+
+      commit('setSharing', true)
+
+      const data = compressData({
+        blockSharing: block,
+        blockUpload: block,
+        filters: state.filters,
+        files: state.files,
+        showPlayers: state.showPlayers,
+        hidePlayers: state.hidePlayers,
+        lootLogs: state.lootLogs,
+        chestLogs: state.chestLogs
+      })
+
+      try {
+        const bin = await database.create(data)
+
+        window.history.pushState({}, '', `?b=${bin}`)
+
+        iziToast.success({
+          title: 'Success',
+          message: 'URL copied to clipboard.',
+          progressBarColor: 'green',
+          titleColor: 'green'
+        })
+
+        copyToClipboard(location.toString())
+      } catch (error) {
+        console.error(error)
+
+        if (error?.response?.status === 403 && error?.response?.message?.indexOf('500kb') !== -1) {
+          iziToast.error({
+            title: 'Error',
+            message: 'The payload exceeds the database limit. :(',
+            progressBarColor: 'red',
+            titleColor: 'red'
+          })
+        } else if (error?.response?.status === 403 && error?.response?.message?.indexOf('Requests exhausted') !== -1) {
+          iziToast.error({
+            title: 'Error',
+            message: 'The free database is exausted. :(',
+            progressBarColor: 'red',
+            titleColor: 'red'
+          })
+        } else {
+          iziToast.error({
+            title: 'Error',
+            message: error.message || 'Something went wrong. :(',
+            progressBarColor: 'red',
+            titleColor: 'red'
+          })
+        }
+      }
+
+      commit('setSharing', false)
+      commit('setBlockSharing', block)
     }
   }
 })
+
+function getMatchesFromFile(file) {
+  const patterns = [
+    { re: regex.chestLogSsvRe, type: 'chest-logs' },
+    { re: regex.aoLootLogRe, type: 'loot-logs' },
+    { re: regex.lootLogRe, type: 'loot-logs' },
+    { re: regex.chestLogRe, type: 'chest-logs' },
+    { re: regex.chestLogCsvRe, type: 'chest-logs' },
+    { re: regex.guildMemberLogRe, type: 'show-players' }
+  ]
+
+  const content = file.content.trim()
+
+  for (const pattern of patterns) {
+    const matches = [...content.matchAll(pattern.re)]
+
+    if (matches.length) {
+      return { matches, filename: file.filename, type: pattern.type }
+    }
+  }
+
+  return iziToast.error({
+    title: 'Error',
+    message: `No matches for ${file.filename}`,
+    progressBarColor: 'red',
+    titleColor: 'red'
+  })
+}
