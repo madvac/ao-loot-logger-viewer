@@ -623,7 +623,20 @@ export default new Vuex.Store({
       commit('setSharing', true)
 
       if (Items.sha === 'master') {
-        await Items.loadSHA()  
+        try {
+          await Items.loadSHA()  
+        } catch (error) {
+          console.error(error)
+
+          commit('setSharing', false)
+
+          return iziToast.error({
+            title: 'Error',
+            message: 'Sorry. You can only share 60 bins a hour. Come back later.',
+            progressBarColor: 'red',
+            titleColor: 'red'
+          })
+        }
       }
 
       const data = compressData({
