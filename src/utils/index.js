@@ -116,7 +116,7 @@ export function compressData(data) {
 
 export function decompressData(data) {
   if (!data.version) {
-    return data
+    data.version = 0
   }
 
   const decompressed = {
@@ -160,7 +160,9 @@ export function decompressData(data) {
   }
 
   if (data.showPlayers) {
-    if (data.version <= 2) {
+    if (data.version <= 0) {
+      decompressed.showPlayers = { ...data.showPlayers }
+    } else if (data.version <= 2) {
       for (const playerName of data.showPlayers.split(';')) {
         decompressed.showPlayers[playerName] = true
       }
@@ -174,12 +176,26 @@ export function decompressData(data) {
   }
 
   if (data.hidePlayers) {
-    for (const playerName of data.hidePlayers.split(';')) {
-      decompressed.hidePlayers[playerName] = true
+    if (data.version <= 0) {
+      decompressed.hidePlayers = { ...data.hidePlayers }
+    } else {
+      for (const playerName of data.hidePlayers.split(';')) {
+        decompressed.hidePlayers[playerName] = true
+      }
     }
   }
 
-  if (data.version <= 1) {
+  if (data.version <= 0) {
+    for (const filename in data.lootLogs) {
+      for (const log of data.lootLogs[filename]) {
+        decompressed.lootLogs.push({
+          ...log,
+          filename,
+          lootedAt: moment(log.lootedAt)
+        })
+      }
+    }
+  } else if (data.version <= 1) {
     decompressed.lootLogs = decompressLootLogsDatav1(data.lootLogs)
   } else if (data.version <= 2) {
     decompressed.lootLogs = decompressLootLogsDatav2(data.lootLogs)
@@ -187,7 +203,17 @@ export function decompressData(data) {
     decompressed.lootLogs = decompressLootLogsData(data.lootLogs)
   }
 
-  if (data.version <= 1) {
+  if (data.version <= 0) {
+    for (const filename in data.chestLogs) {
+      for (const log of data.chestLogs[filename]) {
+        decompressed.chestLogs.push({
+          ...log,
+          filename,
+          donatedAt: moment(log.donatedAt)
+        })
+      }
+    }
+  } else if (data.version <= 1) {
     decompressed.chestLogs = decompressChestLogsDatav1(data.chestLogs)
   } else if (data.version <= 2) {
     decompressed.chestLogs = decompressChestLogsDatav2(data.chestLogs)

@@ -108,27 +108,38 @@ export default {
       this.setLoadingItems(false)
     },
     async loadBin(bin) {
+      console.info('loading bin', bin)
+
       this.setLoadingBin(true)
 
       try {
+        console.info('fetching bin', bin)
+
         const { record } = await database.read(bin)
+
+        console.log('record', record)
+
+        console.info('fetching items from sha', record.sha)
 
         await this.loadItems(record.sha)
 
+        console.info('decompressing record')
+
         const data = decompressData(record)
 
-        this.setBin(data)
+        console.info('setting data', data)
 
+        this.setBin(data)
 
         this.setLoadingBin(false)
         this.setBlockSharing(data.blockSharing)
         this.setBlockUpload(data.blockUpload)
       } catch (error) {
+        console.error(error)
+
         await this.loadItems()
 
         this.setLoadingBin(false)
-
-        console.error(error)
 
         if (error?.response?.status === 403 && error?.response?.message?.indexOf('Requests exhausted') !== -1) {
           iziToast.error({
@@ -165,10 +176,6 @@ export default {
     }
   },
   async mounted() {
-    console.log('mounted', this.$route.path)
-
-    window.$route = this.$route
-
     if (this.$route.query.b) {
       return router.replace(`/${this.$route.query.b}`)
     }
