@@ -1,6 +1,11 @@
-name: website
+name: Publish to GH Pages
 
-on: push
+on:
+  push:
+    branches:
+      - main
+      - route
+
 
 env:
   NODE_VERSION: '14.x' # set this to the node version to use
