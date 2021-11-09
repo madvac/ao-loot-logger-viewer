@@ -243,7 +243,7 @@ export default {
 
 <style scoped lang="scss">
 article {
-  max-width: 80%;
+  max-width: 1240px;
   margin-top: 100vh;
   position: absolute;
   padding-bottom: 5rem;

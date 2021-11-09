@@ -32,14 +32,16 @@
         <p>This item list is empty.</p>
         <p>Update the filters or upload more files.</p>
       </div>
+
+      <Upload @change="upload" popup :disabled="!initialized || loadingBin || blockUpload" />
     </div>
 
-    <div class="content file-upload">
-      <Upload @change="upload" :popup="hasFiles || loadingBin" :disabled="!initialized || loadingBin || blockUpload" />
+    <div class="content file-upload" v-if="!hasFiles && !loadingBin">
+      <Upload @change="upload" :disabled="!initialized || loadingBin || blockUpload" />
 
-      <a href="#faq" v-if="!hasFiles && !loadingBin">Read the FAQ</a>
+      <a href="#faq">Read the FAQ</a>
 
-      <FAQ v-if="!hasFiles && !loadingBin" />
+      <FAQ />
     </div>
   </div>
 </template>
@@ -58,23 +60,24 @@ export default {
     FAQ,
     PlayerLoot,
     Filters,
-    Upload,
+    Upload
   },
   computed: {
     ...mapState(['filters', 'initialized', 'loadingBin', 'blockUpload']),
-    ...mapGetters(['sortedFilteredPlayers', 'filteredPlayers', 'hasFiles']),
+    ...mapGetters(['sortedFilteredPlayers', 'filteredPlayers', 'hasFiles'])
   },
   methods: {
-   ...mapActions([
-     'upload'
-    ]) 
+    ...mapActions(['upload'])
   }
 }
 </script>
 
 <style lang="scss">
 .content-root {
+  align-items: flex-start;
+  display: flex;
   flex: 1 0 auto;
+  justify-content: center;
   width: 80%;
 }
 
