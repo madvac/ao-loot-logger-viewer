@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-      - route
-
 
 env:
   NODE_VERSION: '14.x' # set this to the node version to use
@@ -13,22 +11,28 @@ env:
 jobs:
   publish:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ env.NODE_VERSION }}
+
       - name: npm install
         run: npm install
+
       - name: npm test
         run: npm run test --if-present
+
       - name: npm build
         env:
           VUE_APP_BIN_KEY: ${{ secrets.VUE_APP_BIN_KEY }}
           VUE_APP_COLLECTION_ID: ${{ secrets.VUE_APP_COLLECTION_ID }}
         run: NODE_ENV=production npm run build --if-present
+
       - name: Deploy to GitHub Pages
         if: success()
         uses: crazy-max/ghaction-github-pages@v2
@@ -38,3 +42,23 @@ jobs:
           fqdn: matheus.sampaio.us/ao-loot-logger-viewer
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install semantic release
+        run: npm install -g semantic-release@17
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: semantic-release
