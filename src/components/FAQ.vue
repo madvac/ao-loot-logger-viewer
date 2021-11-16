@@ -13,9 +13,12 @@
         There a few types of files that you can upload:
 
         <ul>
-          <li>Loot logs exported from
-            <a href="https://aolootlog.com/downloads" target="_blank"
-              >AO Loot Logger</a>.
+          <li>Loot log files exported from external tools (contact me if you if know of any other tool available):
+             <ul>
+                <li><a href="https://github.com/matheussampaio/ao-loot-logger" target="_blank">matheussampaio's AO Loot Logger</a></li>
+                <li><a href="https://github.com/Triky313/AlbionOnline-StatisticsAnalysis" target="_blank">Triky313's Albion Online - Statistics Analysis Tool</a></li>
+              </ul>
+
           </li>
           <li>Chest logs exported from Albion Online. The logs will be used to mark some items as resolved. Check <a href="#how-to-chest-logs">here</a> and <a href="#how-to-guilds-chest-logs"
           >here</a> for instructions.</li>
@@ -205,7 +208,7 @@
       </h2>
 
       <p>
-        If you're a GitHub user, please create an <a href="https://github.com/matheussampaio/ao-loot-logger-viewer/issues/new" target="_blank">issue</a> and describe the bug there. Otherwise, send me a message on discord: <code>matheus.sampaio#1372</code>
+        Send me a message on discord (<a href="https://discord.gg/fvNMF2abXr" target="_blank">https://discord.gg/fvNMF2abXr</a>), or create a GitHub <a href="https://github.com/matheussampaio/ao-loot-logger-viewer/issues/new" target="_blank">issue</a>.
       </p>
     </section>
 
@@ -217,7 +220,7 @@
       </h2>
 
       <p>
-        If you're a GitHub user, start a <a href="https://github.com/matheussampaio/ao-loot-logger-viewer/discussions/new" target="_blank">discussion</a>. Otherwise, send me a message on discord: <code>matheus.sampaio#1372</code>
+        Send me a message on discord: <a href="https://discord.gg/fvNMF2abXr" target="_blank">https://discord.gg/fvNMF2abXr</a>.
       </p>
     </section>
 
@@ -229,7 +232,7 @@
       </h2>
 
       <p>
-        Feel free to use the <a href="https://github.com/sponsors/matheussampaio" target="_blank">Github Sponsor</a> program or <a href="https://www.buymeacoffee.com/matheussampaio" target="_blank">Buy me a Coffee</a>
+        Feel free to use the <a href="https://github.com/sponsors/matheussampaio" target="_blank">Github Sponsor</a> program or <a href="https://www.buymeacoffee.com/matheussampaio" target="_blank">Buy me a Coffee</a>.
       </p>
     </section>
   </article>

@@ -11,6 +11,8 @@ import router from './router'
 
 Vue.config.productionTip = process.env.NODE_ENV === 'production'
 
+window.iziToast = iziToast
+
 iziToast.settings({
   timeout: 10000,
   progressBar: true,
