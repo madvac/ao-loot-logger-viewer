@@ -143,7 +143,7 @@ export default new Vuex.Store({
         files[filename] = true
 
         for (const match of file.matches) {
-          const playerName = (match.groups.userName1 || match.groups.userName2).toLowerCase()
+          const playerName = (match.groups.userName1 || match.groups.userName2 || match.groups.userName3).toLowerCase()
 
           showPlayers[playerName] = filename
         }
