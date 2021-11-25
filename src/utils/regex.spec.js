@@ -51,9 +51,17 @@ const fixtures = {
       `"1"	"username2"	""	"10000"`,
       `randomuser2`,
       `randomuser3`,
-      `3,ReedQ,Oficial,3612872`,
-      `4,unaizap,Doby,2337752`,
-      `5,Maligoss,Embo,2211482`
+      `3,randomuser4,,3612872`,
+      `4,randomuser5,,2337752`,
+      `5,randomuser6,,2211482`
+    ].join('\n')
+  },
+  v2LootLogRe: {
+    regex: regex.v2LootLogRe,
+    matches: 2,
+    text: [
+      `2021-11-23T03:40:00.662Z;allianceBy;guild by;randomuser;T6_HEAD_LEATHER_ROYAL@2;Master's Royal Hood;1;alliance from;guild from;matheussampaio`,
+      `2021-11-23T03:40:00.662Z;;;randomuser;T6_HEAD_LEATHER_ROYAL@2;Master's Royal Hood;1;;;matheussampaio`
     ].join('\n')
   }
 }

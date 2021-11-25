@@ -162,9 +162,13 @@ export default new Vuex.Store({
 
         for (const match of file.matches) {
           const lootedAt = strToDate(match.groups.lootedAt)
+          const lootedByAlliance = match.groups.lootedByAlliance
+          const lootedByGuild = match.groups.lootedByGuild
           const lootedBy = match.groups.lootedBy
           const itemId = match.groups.itemId
           const amount = parseInt(match.groups.amount, 10)
+          const lootedFromAlliance = match.groups.lootedFromAlliance
+          const lootedFromGuild = match.groups.lootedFromGuild
           const lootedFrom = match.groups.lootedFrom
 
           const info = Items.getInfoFromId(itemId)
@@ -174,7 +178,22 @@ export default new Vuex.Store({
           const category = info.category
           const subcategory = info.subcategory
 
-          const log = { filename, lootedAt, lootedBy, lootedFrom, itemId, itemName, amount, tier, category, subcategory }
+          const log = {
+            filename,
+            lootedAt,
+            lootedByAlliance,
+            lootedByGuild,
+            lootedBy,
+            lootedFromAlliance,
+            lootedFromGuild,
+            lootedFrom,
+            itemId,
+            itemName,
+            amount,
+            tier,
+            category,
+            subcategory
+          }
 
           lootLogs.push(log)
         }
@@ -699,6 +718,7 @@ export default new Vuex.Store({
 function getMatchesFromFile(file) {
   const patterns = [
     { re: regex.chestLogSsvRe, type: 'chest-logs' },
+    { re: regex.v2LootLogRe, type: 'loot-logs' },
     { re: regex.aoLootLogRe, type: 'loot-logs' },
     { re: regex.lootLogRe, type: 'loot-logs' },
     { re: regex.chestLogRe, type: 'chest-logs' },
