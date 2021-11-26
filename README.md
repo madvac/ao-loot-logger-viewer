@@ -1,6 +1,6 @@
-# AO Loot Logger Viewer
 [![Discord](https://img.shields.io/badge/discord-join-blue)](https://discord.gg/fvNMF2abXr)
 
+# AO Loot Logger Viewer
 
 ## Funding
 
