@@ -15,6 +15,8 @@
             v-for="playerName in sortedFilteredPlayers"
             :key="playerName"
             :name="filteredPlayers[playerName].name"
+            :alliance="filteredPlayers[playerName].alliance"
+            :guild="filteredPlayers[playerName].guild"
             :died="filteredPlayers[playerName].died"
             :picked-up-items="filteredPlayers[playerName].pickedUpItems"
             :resolved-items="filters.resolved ? filteredPlayers[playerName].resolvedItems : {}"
@@ -23,7 +25,7 @@
             />
         </tbody>
       </table>
-      
+
       <div v-else-if="loadingBin" class="loading-bin">
         <p>Loading...</p>
       </div>

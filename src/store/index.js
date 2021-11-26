@@ -309,12 +309,22 @@ export default new Vuex.Store({
         if (players[loot.lootedBy.toLowerCase()] == null) {
           players[loot.lootedBy.toLowerCase()] = {
             name: loot.lootedBy,
+            alliance: null,
+            guild: null,
             amountOfPickedUpItems: 0,
             pickedUpItems: {},
             resolvedItems: {},
             lostItems: {},
             donatedItems: {}
           }
+        }
+
+        if (loot.lootedByAlliance && players[loot.lootedBy.toLowerCase()].alliance !== loot.lootedByAlliance) {
+          players[loot.lootedBy.toLowerCase()].alliance = loot.lootedByAlliance
+        }
+
+        if (loot.lootedByGuild && players[loot.lootedBy.toLowerCase()].guild !== loot.lootedByGuild) {
+          players[loot.lootedBy.toLowerCase()].guild = loot.lootedByGuild
         }
 
         if (players[loot.lootedBy.toLowerCase()].pickedUpItems[loot.itemId] == null) {
@@ -629,8 +639,7 @@ export default new Vuex.Store({
 
       const files = await Promise.all(promises)
 
-      const matches = files.map(file => getMatchesFromFile(file))
-        .filter(matches => matches != null)
+      const matches = files.map(file => getMatchesFromFile(file)).filter(matches => matches != null)
 
       commit('uploadedFiles', matches)
     },
@@ -643,7 +652,7 @@ export default new Vuex.Store({
 
       if (Items.sha === 'master') {
         try {
-          await Items.loadSHA()  
+          await Items.loadSHA()
         } catch (error) {
           console.error(error)
 

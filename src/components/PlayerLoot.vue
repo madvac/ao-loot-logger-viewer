@@ -2,8 +2,12 @@
   <tr>
     <td class="player-name" :class="{ died: died }">
       <div :title="died ? `${name} died.` : ''">
-        {{ name }} ({{ totalItemsPickedUp }})
-
+        <div>
+          {{ name }} ({{ totalItemsPickedUp }})
+        </div>
+        <div class="guild-info" v-if="guild">
+          {{ alliance ? `[${alliance}]` : '' }} {{ guild || '' }}
+        </div>
         <svg
           aria-hidden="true"
           focusable="false"
@@ -47,6 +51,12 @@ export default {
     name: {
       type: String,
       required: true
+    },
+    guild: {
+      type: String
+    },
+    alliance: {
+      type: String
     },
     pickedUpItems: {
       type: Object,
@@ -171,6 +181,11 @@ export default {
 
 .died {
   color: #cc0000;
+}
+
+.guild-info {
+  font-size: 0.75em;
+  font-weight: 300;
 }
 
 .items {

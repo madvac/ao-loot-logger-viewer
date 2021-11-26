@@ -40,12 +40,12 @@ export function copyToClipboard(str) {
 
 export function compressData(data) {
   const compressed = {
-    version: 3,
+    version: 4,
     blockSharing: !!data.blockSharing,
     blockUpload: !!data.blockUpload,
     sha: Items.sha,
     filters: Object.keys(data.filters)
-      .filter(key => data.filters[key])
+      .filter((key) => data.filters[key])
       .join(';'),
     files: Object.keys(data.files).join(';'),
     showPlayers: {},
@@ -91,7 +91,20 @@ export function compressData(data) {
 
     const info = Items.getInfoFromId(log.itemId)
 
-    compressed.lootLogs.push([log.filename, log.lootedAt.unix(), log.lootedBy, info.index, log.amount, log.lootedFrom].join(';'))
+    compressed.lootLogs.push(
+      [
+        log.filename,
+        log.lootedAt.unix(),
+        log.lootedByAlliance,
+        log.lootedByGuild,
+        log.lootedBy,
+        info.index,
+        log.amount,
+        log.lootedFromAlliance,
+        log.lootedFromGuild,
+        log.lootedFrom
+      ].join(';')
+    )
   }
 
   for (const log of data.chestLogs) {
@@ -199,8 +212,10 @@ export function decompressData(data) {
     decompressed.lootLogs = decompressLootLogsDatav1(data.lootLogs)
   } else if (data.version <= 2) {
     decompressed.lootLogs = decompressLootLogsDatav2(data.lootLogs)
+  } else if (data.version <= 3) {
+    decompressed.lootLogs = decompressLootLogsDatav3(data.lootLogs)
   } else {
-    decompressed.lootLogs = decompressLootLogsData(data.lootLogs)
+    decompressed.lootLogs = decompressLootLogsDatav4(data.lootLogs)
   }
 
   if (data.version <= 0) {
@@ -272,7 +287,7 @@ function decompressLootLogsDatav2(lootLogs) {
   return decompressedLootLogs
 }
 
-function decompressLootLogsData(lootLogs) {
+function decompressLootLogsDatav3(lootLogs) {
   const decompressedLootLogs = []
 
   for (const log of lootLogs) {
@@ -286,6 +301,45 @@ function decompressLootLogsData(lootLogs) {
       lootedBy,
       itemId: info.id,
       amount: parseInt(amount, 10),
+      lootedFrom,
+      category: info.category,
+      subcategory: info.subcategory,
+      tier: info.tier
+    })
+  }
+
+  return decompressedLootLogs
+}
+
+function decompressLootLogsDatav4(lootLogs) {
+  const decompressedLootLogs = []
+
+  for (const log of lootLogs) {
+    const [
+      filename,
+      lootedAtUnix,
+      lootedByAlliance,
+      lootedByGuild,
+      lootedBy,
+      itemIndex,
+      amount,
+      lootedFromAlliance,
+      lootedFromGuild,
+      lootedFrom
+    ] = log.split(';')
+
+    const info = Items.getInfoFromIndex(itemIndex)
+
+    decompressedLootLogs.push({
+      filename,
+      lootedAt: moment.unix(lootedAtUnix),
+      lootedByAlliance,
+      lootedByGuild,
+      lootedBy,
+      itemId: info.id,
+      amount: parseInt(amount, 10),
+      lootedFromAlliance,
+      lootedFromGuild,
       lootedFrom,
       category: info.category,
       subcategory: info.subcategory,
