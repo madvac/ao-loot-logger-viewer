@@ -4,20 +4,23 @@ class Items {
   constructor() {
     this.items = {}
 
-    // this.idToName = {}
-    // this.locNameVarToName = {}
-    // this.indexToName = {}
-    // this.nameToInfo = {}
-
     this.isInitialized = false
   }
 
+  getLocalizedNamesFromId(itemId) {
+    return this.items[itemId]?.localizedNames || this.items[`@ITEMS_${itemId}`]?.localizedNames
+  }
+
   getNameFromId(itemId) {
-    return this.items[itemId]?.name || this.items[`@ITEMS_${itemId}`]?.name
+    return this.items[itemId]?.localizedNames['EN-US'] || this.items[`@ITEMS_${itemId}`]?.localizedNames['EN-US']
+  }
+
+  getLocalizedNamesFromIndex(itemIndex) {
+    return this.items[itemIndex].localizedNames
   }
 
   getNameFromIndex(itemIndex) {
-    return this.items[itemIndex].name
+    return this.items[itemIndex].localizedNames['EN-US']
   }
 
   getIdFromName(itemName) {
@@ -61,12 +64,8 @@ class Items {
     )
 
     for (const item of response.data) {
-      const locName = item.LocalizedNames && item.LocalizedNames['EN-US'] ? item.LocalizedNames['EN-US'] : null
-      const name = locName || item.UniqueName
-
       const data = {
-        name,
-        locName,
+        localizedNames: item.LocalizedNames,
         locNameVar: item.LocalizationNameVariable,
         id: item.UniqueName,
         index: item.Index
@@ -76,8 +75,15 @@ class Items {
       this.items[item.LocalizationNameVariable] = data
       this.items[item.Index] = data
 
-      if (this.items[name] == null || item.UniqueName.indexOf('@') === -1) {
-        this.items[name] = data
+      if (item.LocalizedNames) {
+        for (const lang in item.LocalizedNames) {
+          const locName = item.LocalizedNames[lang]
+          const name = locName || item.UniqueName
+
+          if (this.items[name] == null || item.UniqueName.indexOf('@') === -1) {
+            this.items[name] = data
+          }
+        }
       }
     }
 
@@ -85,10 +91,14 @@ class Items {
 
     for (const item of response.data.items.mountskin) {
       const id = item['@uniquename']
-      const name = this.getNameFromId(id)
+      const locNames = this.getLocalizedNamesFromId(id)
 
-      this.items[name].category = 'skin'
-      this.items[name].subcategory = 'mountskin'
+      for (const lang in locNames) {
+        const name = locNames[lang]
+
+        this.items[name].category = 'skin'
+        this.items[name].subcategory = 'mountskin'
+      }
     }
 
     const ignoreGroups = {
@@ -138,17 +148,25 @@ class Items {
           }
 
           if (this.items[id].category === 'products' && this.items[id].subcategory === 'journal') {
-            const journalFull = this.getNameFromId(`${id}_FULL`)
+            const locNamesJournalFull = this.getLocalizedNamesFromId(`${id}_FULL`)
 
-            this.items[journalFull].tier = parseInt(item['@tier'], 10)
-            this.items[journalFull].category = item['@shopcategory']
-            this.items[journalFull].subcategory = item['@shopsubcategory1']
+            for (const lang in locNamesJournalFull) {
+              const journalFull = locNamesJournalFull[lang]
 
-            const journalEmpty = this.getNameFromId(`${id}_EMPTY`)
+              this.items[journalFull].tier = parseInt(item['@tier'], 10)
+              this.items[journalFull].category = item['@shopcategory']
+              this.items[journalFull].subcategory = item['@shopsubcategory1']
+            }
 
-            this.items[journalEmpty].tier = parseInt(item['@tier'], 10)
-            this.items[journalEmpty].category = item['@shopcategory']
-            this.items[journalEmpty].subcategory = item['@shopsubcategory1']
+            const locNamesJournalEmpty = this.getLocalizedNamesFromId(`${id}_EMPTY`)
+
+            for (const lang in locNamesJournalEmpty) {
+              const journalEmpty = locNamesJournalEmpty[lang]
+
+              this.items[journalEmpty].tier = parseInt(item['@tier'], 10)
+              this.items[journalEmpty].category = item['@shopcategory']
+              this.items[journalEmpty].subcategory = item['@shopsubcategory1']
+            }
           }
         }
       }
