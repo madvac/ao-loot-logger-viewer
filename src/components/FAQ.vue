@@ -208,7 +208,7 @@
       </h2>
 
       <p>
-        Send me a message on discord (<a href="https://discord.gg/fvNMF2abXr" target="_blank">https://discord.gg/fvNMF2abXr</a>), or create a GitHub <a href="https://github.com/matheussampaio/ao-loot-logger-viewer/issues/new" target="_blank">issue</a>.
+        Send me a message on discord (<a href="https://discord.gg/fvNMF2abXr" target="_blank" rel="noopener noreferrer">https://discord.gg/fvNMF2abXr</a>), or create a GitHub <a href="https://github.com/matheussampaio/ao-loot-logger-viewer/issues/new" target="_blank" rel="noopener">issue</a>.
       </p>
     </section>
 
@@ -220,7 +220,7 @@
       </h2>
 
       <p>
-        Send me a message on discord: <a href="https://discord.gg/fvNMF2abXr" target="_blank">https://discord.gg/fvNMF2abXr</a>.
+        Send me a message on discord: <a href="https://discord.gg/fvNMF2abXr" target="_blank" rel="noopener noreferrer">https://discord.gg/fvNMF2abXr</a>.
       </p>
     </section>
 
@@ -232,7 +232,7 @@
       </h2>
 
       <p>
-        Feel free to use the <a href="https://github.com/sponsors/matheussampaio" target="_blank">Github Sponsor</a> program or <a href="https://www.buymeacoffee.com/matheussampaio" target="_blank">Buy me a Coffee</a>.
+        Feel free to use the <a href="https://github.com/sponsors/matheussampaio" target="_blank" rel="noopener">Github Sponsor</a> program or <a href="https://www.buymeacoffee.com/matheussampaio" target="_blank" rel="noopener">Buy me a Coffee</a>.
       </p>
     </section>
   </article>

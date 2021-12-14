@@ -3,7 +3,7 @@
     <td class="player-name" :class="{ died: died }">
       <div :title="died ? `${name} died.` : ''">
         <div>
-          {{ name }} ({{ totalItemsPickedUp }})
+          <a :href="`https://murderledger.com/players/${name}/ledger?show_kills=0&show_assists=0`" target="_blank" rel="noopener noreferrer">{{ name }}</a> ({{ totalItemsPickedUp }})
         </div>
         <div class="guild-info" v-if="guild">
           {{ alliance ? `[${alliance}]` : '' }} {{ guild || '' }}

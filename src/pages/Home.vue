@@ -41,6 +41,10 @@
     <div class="content file-upload" v-if="!hasFiles && !loadingBin">
       <Upload @change="upload" :disabled="!initialized || loadingBin || blockUpload" />
 
+      <a href="https://discord.gg/fvNMF2abXr" target="_blank" rel="noopener noreferrer">Discord</a>
+
+      <hr>
+
       <a href="#faq">Read the FAQ</a>
 
       <FAQ />

@@ -1,7 +1,7 @@
 <template>
   <footer>
     <div v-if="showBuyMeCoffee" class="donation">
-      <a href="https://www.buymeacoffee.com/matheussampaio" target="_blank">
+      <a href="https://www.buymeacoffee.com/matheussampaio" target="_blank" rel="noopener">
         Buy me a coffee
 
         <svg
@@ -19,7 +19,7 @@
     </div>
 
     <div v-else class="donation sponsor">
-      <a href="https://github.com/sponsors/matheussampaio" target="_blank"
+      <a href="https://github.com/sponsors/matheussampaio" target="_blank" rel="noopener"
         >Sponsor the project
 
         <svg

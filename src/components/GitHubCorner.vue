@@ -4,6 +4,7 @@
     class="github-corner"
     aria-label="View source on GitHub"
     target="_blank"
+     rel="noopener"
     ><svg
       width="50"
       height="50"
