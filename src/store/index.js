@@ -173,7 +173,7 @@ export default new Vuex.Store({
 
           const info = Items.getInfoFromId(itemId)
 
-          const itemName = info.localizedNames['EN-US']
+          const itemName = info.localizedNames && info.localizedNames['EN-US'] ? info.localizedNames['EN-US'] : info.id
           const tier = info.tier
           const category = info.category
           const subcategory = info.subcategory
