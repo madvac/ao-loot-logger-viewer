@@ -21,9 +21,10 @@ const fixtures = {
   },
   chestLogRe: {
     regex: regex.chestLogRe,
-    matches: 2,
+    matches: 3,
     text: [
       `"06/10/2021 04:04:42"	"matheussampaio"	"Master's Relic"	"0"	"1"	"1"`,
+      `"06/10/2021 04:04:42" "matheussampaio" "Master's Relic" "0" "1" "1"`,
       `"06/10/2021 04:04:40"	"matheussampaio"	"Expert's Bag"	"0"	"2"	"1"`
     ].join('\n')
   },
