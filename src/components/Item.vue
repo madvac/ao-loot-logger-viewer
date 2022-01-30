@@ -74,7 +74,13 @@ export default {
         strs = this.history.map(e => `${e.amount}x looted from ${e.lootedFrom} on ${dateToStr(e.lootedAt)}`)
       }
 
-      return [`${Items.getNameFromId(this.id)} - ${this.id}`, '', ...strs].join('\n')
+      const name = Items.getNameFromId(this.id)
+
+      return [
+        name !== this.id ? `${name} - ${this.id}` : this.id,
+        '',
+        ...strs
+      ].join('\n')
     }
   },
   methods: {

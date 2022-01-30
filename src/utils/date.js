@@ -27,8 +27,6 @@ export function strToDate(str) {
 }
 
 export function dateToStr(date) {
-  window.date = date
-
   if (Object.isFrozen(date)) {
     return date
       .clone()

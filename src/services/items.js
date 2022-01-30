@@ -12,7 +12,9 @@ class Items {
   }
 
   getNameFromId(itemId) {
-    return this.items[itemId]?.localizedNames['EN-US'] || this.items[`@ITEMS_${itemId}`]?.localizedNames['EN-US']
+    const item = this.items[itemId] ?? this.items[`@ITEMS_${itemId}`]
+
+    return item?.localizedNames?.['EN-US'] ?? itemId
   }
 
   getLocalizedNamesFromIndex(itemIndex) {

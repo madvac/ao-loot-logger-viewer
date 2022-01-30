@@ -227,7 +227,7 @@ export default new Vuex.Store({
           const info = Items.getInfoFromName(itemName)
 
           if (info == null) {
-            console.error(`item not found: "${itemName}"`)
+            console.warn(`item not found: "${itemName}"`)
             continue
           }
 
