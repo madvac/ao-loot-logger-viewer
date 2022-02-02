@@ -59,10 +59,12 @@ const fixtures = {
   },
   v2LootLogRe: {
     regex: regex.v2LootLogRe,
-    matches: 2,
+    matches: 4,
     text: [
       `2021-11-23T03:40:00.662Z;allianceBy;guild by;randomuser;T6_HEAD_LEATHER_ROYAL@2;Master's Royal Hood;1;alliance from;guild from;matheussampaio`,
-      `2021-11-23T03:40:00.662Z;;;randomuser;T6_HEAD_LEATHER_ROYAL@2;Master's Royal Hood;1;;;matheussampaio`
+      `2021-11-23T03:40:00.662Z;;;randomuser;T6_HEAD_LEATHER_ROYAL@2;Master's Royal Hood;1;;;matheussampaio`,
+      `2022-02-01T21:07:12.397Z;;;DarkShadowZ1;T4_RUNE;Adept's Rune;4;;;@MOB_T6_MOB_RD_AVALON_MORTAR_ELITE`,
+      `2022-02-01T21:07:12.618Z;;;NiceTrade;T5_RUNE;Expert's Rune;1;;;@MOB_T6_MOB_RD_AVALON_MORTAR_ELITE`
     ].join('\n')
   }
 }
