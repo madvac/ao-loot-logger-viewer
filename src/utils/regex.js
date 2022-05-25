@@ -1,5 +1,5 @@
 const guildMemberLogRe = /^(("\d*"\t"(?<userName1>.*)"\t".*"\t"-?\d*")|(?<userName2>\w+)|(\d*,(?<userName3>.*),.*,-?\d*))$/gm
-const lootLogRe = /^(?<lootedAt>[^;]*);(?<lootedBy>\w*);(?<itemId>[\w@]+);(?<amount>\d*);(?<lootedFrom>\w*?)(;(?<itemName>.*))?$/gm
+const lootLogRe = /^(?<lootedAt>[^;]*);(?<lootedBy>\w*);(?<itemId>[^ ]+);(?<amount>\d*);(?<lootedFrom>\w*?)(;(?<itemName>.*))?$/gm
 const v2LootLogRe =
   /^(?<lootedAt>[^;]*);(?<lootedByAlliance>.*);(?<lootedByGuild>.*);(?<lootedBy>\w*);(?<itemId>[\w@]+);(?<itemName>.*);(?<amount>\d*);(?<lootedFromAlliance>.*);(?<lootedFromGuild>.*);(?<lootedFrom>.*)$/gm
 const aoLootLogRe = /^"(?<lootedAt>[^,]*)","(?<lootedBy>\w*?)","(?<guildName>.*)","(?<item>.*)","(?<itemName>.*) \((?<itemId>[\w@]+)\)","(?<amount>.*)x .+","(?<lootedFrom>\w*?)"/gm

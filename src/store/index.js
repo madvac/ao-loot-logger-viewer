@@ -165,14 +165,14 @@ export default new Vuex.Store({
           const lootedByAlliance = match.groups.lootedByAlliance
           const lootedByGuild = match.groups.lootedByGuild
           const lootedBy = match.groups.lootedBy
-          const itemId = match.groups.itemId
           const amount = parseInt(match.groups.amount, 10)
           const lootedFromAlliance = match.groups.lootedFromAlliance
           const lootedFromGuild = match.groups.lootedFromGuild
           const lootedFrom = match.groups.lootedFrom
 
-          const info = Items.getInfoFromId(itemId)
+          const info = Items.getInfoFromId(match.groups.itemId)
 
+          const itemId = info.id
           const itemName = info.localizedNames && info.localizedNames['EN-US'] ? info.localizedNames['EN-US'] : info.id
           const tier = info.tier
           const category = info.category
