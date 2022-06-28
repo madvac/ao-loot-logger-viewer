@@ -11,13 +11,20 @@ const fixtures = {
   },
   lootLogRe: {
     regex: regex.lootLogRe,
-    matches: 5,
+    matches: 4,
     text: [
-      `5/7/2021 3:00:02;matheussampaio1;T7_POTION_STONESKIN;200;matheussampaio2`,
-      `5/7/2021 3:00:02;matheussampaio1;T7_POTION_STONESKIN;200;matheussampaio2`,
       `2021-06-07T22:25:16.432Z;matheussampaio1;T8_CAPEITEM_FW_BRIDGEWATCH;1;matheussampaio2;Elder's Bridgewatch Cape`,
-      `2021-06-07T22:25:16.432Z;matheussampaio1;T8_CAPEITEM_FW_BRIDGEWATCH;1;matheussampaio2;Elder's Bridgewatch Cape`,
-      `05/20/2022 13:57:52;QIANGWEIHUA;娴熟级背包;1;NETD2544`
+      `2021-06-07T22:25:16.432Z;matheussampaio1;T8_CAPEITEM_FW_BRIDGEWATCH;1;matheussampaio2;Elder's Bridgewatch Cape`
+    ]
+  },
+  albionAnalysisLootLogRe: {
+    regex: regex.albionAnalysisLootLogRe,
+    matches: 4,
+    text: [
+      `2022-06-28T06:14:37.912Z;Arjhidazz;TREASURE_CEREMONIAL_RARITY1;1;@MOB_MORGANA_SOLDIER_VETERAN`,
+      `2022-06-28T06:29:13.981Z;Arjhidazz;T5_RUNE;1;@MOB_HERETIC_TANK_VETERAN`,
+      `2022-06-28T06:29:16.622Z;Arjhidazz;T4_SKILLBOOK_STANDARD;1;@MOB_HERETIC_TANK_VETERAN`,
+      `2022-06-28T06:29:17.091Z;Arjhidazz;T5_RUNE;1;@MOB_HERETIC_TANK_VETERAN`
     ]
   },
   chestLogRe: {

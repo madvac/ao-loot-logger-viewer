@@ -729,6 +729,7 @@ function getMatchesFromFile(file) {
     { re: regex.chestLogSsvRe, type: 'chest-logs' },
     { re: regex.v2LootLogRe, type: 'loot-logs' },
     { re: regex.aoLootLogRe, type: 'loot-logs' },
+    { re: regex.albionAnalysisLootLogRe, type: 'loot-logs' },
     { re: regex.lootLogRe, type: 'loot-logs' },
     { re: regex.chestLogRe, type: 'chest-logs' },
     { re: regex.chestLogCsvRe, type: 'chest-logs' },
