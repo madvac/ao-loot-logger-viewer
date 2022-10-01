@@ -8,6 +8,7 @@ export function strToDate(str) {
     'M.D.YYYY k:mm:ss',
     'D.M.YYYY k.mm.ss',
     'M.D.YYYY k.mm.ss',
+    'M.D.YYYY k:mm',
     moment.ISO_8601
   ])
 

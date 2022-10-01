@@ -41,6 +41,7 @@
     "core-js": "^3.6.5",
     "file-saver": "^2.0.5",
     "izitoast": "^1.4.0",
+    "jschardet": "^3.0.0",
     "moment": "^2.29.1",
     "vue": "^2.6.11",
     "vue-router": "^3.5.2",

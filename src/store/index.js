@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import VuexPersistence from 'vuex-persist'
 import iziToast from 'izitoast'
+import jschardet from 'jschardet'
 
 import deepFreeze from '../utils/deepFreeze'
 import Items from '../services/items'
@@ -216,6 +217,7 @@ export default new Vuex.Store({
           const amount = parseInt(match.groups.amount, 10)
 
           if (amount < 0) {
+            console.info("Skipping item since it has a negative amount (removed from the chest):", match.groups)
             continue
           }
 
@@ -629,11 +631,29 @@ export default new Vuex.Store({
 
       const promises = droppedFiles.map(file => {
         return new Promise(resolve => {
-          const reader = new FileReader()
+          const encodingReader = new FileReader()
+          const contentReader = new FileReader()
 
-          reader.onload = evt => resolve({ filename: file.name, content: evt.target.result })
+          encodingReader.onload = evt => {
+            const filecontent = evt.target.result.split(/\r|\n|\r\n/)
+            const detection = jschardet.detect(filecontent.toString())
+            const encoding = detection.confidence >= 0.2 ? detection.encoding : 'UTF-8'
 
-          reader.readAsText(file, 'UTF-8')
+            console.info(`Charset detected for ${file.name}:`, detection)
+            console.info(`Charset used for ${file.name}:`, encoding)
+
+            contentReader.readAsText(file, encoding)
+          }
+
+          contentReader.onload = evt => {
+            const content = evt.target.result
+
+            console.log({ content })
+
+            return resolve({ filename: file.name, content })
+          }
+
+          encodingReader.readAsBinaryString(file)
         })
       })
 
@@ -737,11 +757,22 @@ function getMatchesFromFile(file) {
   ]
 
   const content = file.content.trim()
+  const totalLines = content.split("\n").length
 
   for (const pattern of patterns) {
     const matches = [...content.matchAll(pattern.re)]
 
     if (matches.length) {
+      console.info(`Found ${matches.length} ${pattern.type} matches out of ${totalLines} lines in ${file.filename}`)
+
+      if (matches.length < totalLines) {
+        const nonMatches = content.split('\n')
+          .map(line => line.trim())
+          .filter(line => !line.match(pattern.re))
+
+        console.info('Skipped lines:', nonMatches)
+      }
+
       return { matches, filename: file.filename, type: pattern.type }
     }
   }
