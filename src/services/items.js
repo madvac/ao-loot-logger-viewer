@@ -44,7 +44,7 @@ class Items {
   async loadSHA() {
     console.info('loading latest SHA from ao-bin-dumps')
 
-    const response = await axios.get('https://api.github.com/repos/broderickhyman/ao-bin-dumps/commits/master')
+    const response = await axios.get('https://api.github.com/repos/ao-data/ao-bin-dumps/commits/master')
 
     console.log('latest SHA from ao-bin-dumps', response.data.sha)
 
@@ -62,7 +62,7 @@ class Items {
     this.sha = sha
 
     let response = await axios.get(
-      `https://raw.githubusercontent.com/broderickhyman/ao-bin-dumps/${this.sha}/formatted/items.json`
+      `https://raw.githubusercontent.com/ao-data/ao-bin-dumps/${this.sha}/formatted/items.json`
     )
 
     for (const item of response.data) {
@@ -89,7 +89,7 @@ class Items {
       }
     }
 
-    response = await axios.get(`https://raw.githubusercontent.com/broderickhyman/ao-bin-dumps/${this.sha}/items.json`)
+    response = await axios.get(`https://raw.githubusercontent.com/ao-data/ao-bin-dumps/${this.sha}/items.json`)
 
     for (const item of response.data.items.mountskin) {
       const id = item['@uniquename']
